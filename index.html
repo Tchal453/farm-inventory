@@ -11,6 +11,7 @@
 <header class="topbar">
   <div class="brand"><span class="logo">🌾</span><div><h1>Farm Inventory</h1><p class="sub">Yard, shop &amp; bins at a glance</p></div></div>
   <div class="top-actions">
+    <button class="btn scan-btn" id="scanBtn" aria-label="Scan a barcode">📷 Scan</button>
     <button class="btn primary" id="addBtn">+ Add item</button>
     <div class="menu-wrap">
       <button class="btn ghost" id="menuBtn" aria-haspopup="true" aria-expanded="false">⋯ Data</button>
@@ -40,7 +41,7 @@
   </section>
 
   <section class="controls" aria-label="Search and filters">
-    <input type="search" id="search" placeholder="Search name, supplier, notes…" aria-label="Search">
+    <input type="search" id="search" placeholder="Search name, barcode, supplier, notes…" aria-label="Search">
     <select id="filterCategory" aria-label="Filter by category"><option value="">All categories</option></select>
     <select id="filterLocation" aria-label="Filter by location"><option value="">All locations</option></select>
     <select id="sortBy" aria-label="Sort">
@@ -66,6 +67,9 @@
       <label>Unit<select name="unit" id="fUnit"></select></label>
       <label>Low-stock alert at<input name="threshold" type="number" step="any" min="0" inputmode="decimal" value="0"></label>
       <label>Cost per unit (CAD)<input name="cost" type="number" step="0.01" min="0" inputmode="decimal" placeholder="optional"></label>
+      <label class="full">Barcode
+        <span class="input-with-btn"><input name="barcode" id="fBarcode" maxlength="64" autocomplete="off" placeholder="optional — scan or type"><button type="button" class="btn small" id="formScanBtn" aria-label="Scan barcode into this field">📷 Scan</button></span>
+      </label>
       <label class="full">Supplier<input name="supplier" placeholder="optional"></label>
       <label class="full">Notes<textarea name="notes" rows="2"></textarea></label>
     </div>
@@ -108,6 +112,32 @@
     <div id="historyList"></div>
     <div class="dialog-actions"><button type="button" class="btn primary" data-close>Close</button></div>
   </div>
+</dialog>
+
+<!-- Scanner dialog -->
+<dialog id="scanDialog">
+  <div class="dialog-body">
+    <h2 id="scanTitle" tabindex="-1" autofocus>Scan a barcode</h2>
+    <div class="scan-view" id="scanView">
+      <video id="scanVideo" playsinline muted hidden></video>
+      <div id="scanReader"></div>
+      <div class="scan-frame" id="scanFrame" hidden></div>
+    </div>
+    <p class="scan-status" id="scanStatus" role="status">Starting camera…</p>
+    <form id="manualForm" class="manual-form" novalidate>
+      <label for="manualCode">Or type the barcode number</label>
+      <div class="input-with-btn">
+        <input id="manualCode" name="code" inputmode="text" autocomplete="off" maxlength="64" placeholder="e.g. 064200116459">
+        <button type="submit" class="btn primary" id="manualGo">Look up</button>
+      </div>
+    </form>
+    <div class="dialog-actions"><button type="button" class="btn ghost" data-close>Cancel</button></div>
+  </div>
+</dialog>
+
+<!-- Scan result dialog -->
+<dialog id="scanResultDialog">
+  <div class="dialog-body" id="scanResult"></div>
 </dialog>
 
 <!-- Confirm dialog -->

@@ -1,4 +1,4 @@
-/* Farm Inventory v1 — vanilla JS, data in localStorage. */
+/* Farm Inventory v1.1 — vanilla JS, data in localStorage. Barcode scanning added. */
 (function () {
   'use strict';
 
@@ -76,7 +76,10 @@
       var raw = localStorage.getItem(STORAGE_KEY);
       if (raw) {
         var parsed = JSON.parse(raw);
-        if (parsed && Array.isArray(parsed.items)) return parsed;
+        if (parsed && Array.isArray(parsed.items)) {
+          parsed.items.forEach(function (i) { if (i && typeof i.barcode !== 'string') i.barcode = ''; });
+          return parsed;
+        }
       }
     } catch (e) { console.warn('Could not read saved data', e); }
     return { version: 1, items: makeExamples() };
@@ -86,6 +89,19 @@
     catch (e) { toast('Could not save — storage full or blocked.'); }
   }
   function findItem(id) { return state.items.find(function (i) { return i.id === id; }); }
+
+  // ---------- barcode helpers ----------
+  function cleanCode(v) { return String(v == null ? '' : v).replace(/[\u0000-\u001f]/g, '').trim().slice(0, 64); }
+  // UPC-A (12 digits) and EAN-13 with a leading 0 are the same product, so compare them as equal.
+  function codeKey(v) {
+    var c = cleanCode(v);
+    if (/^\d{13}$/.test(c) && c.charAt(0) === '0') c = c.slice(1);
+    return c.toLowerCase();
+  }
+  function findByBarcode(code) {
+    var k = codeKey(code); if (!k) return null;
+    return state.items.find(function (i) { return i.barcode && codeKey(i.barcode) === k; }) || null;
+  }
 
   function recordChange(it, type, change, note, date) {
     it.quantity = round(Math.max(0, it.quantity + change));
@@ -157,7 +173,7 @@
       if (ui.location && (i.location || '').trim() !== ui.location) return false;
       if (ui.lowOnly && !isLow(i)) return false;
       if (q) {
-        var hay = [i.name, i.category, i.location, i.supplier, i.notes].join(' ').toLowerCase();
+        var hay = [i.name, i.category, i.location, i.supplier, i.notes, i.barcode].join(' ').toLowerCase();
         if (hay.indexOf(q) < 0) return false;
       }
       return true;
@@ -191,6 +207,7 @@
           '<span>Alert at: ' + (i.threshold > 0 ? numFmt.format(i.threshold) + ' ' + esc(i.unit) : 'off') + '</span>' +
           '<span>' + (i.cost != null ? cad.format(i.cost) + '/' + esc(i.unit.replace(/s$/, '')) + ' · ' + cad.format(itemValue(i)) : 'No cost set') + '</span>' +
           '<span>' + (i.supplier ? 'Supplier: ' + esc(i.supplier) : '') + '</span>' +
+          (i.barcode ? '<span class="barcode" data-barcode="' + esc(i.barcode) + '">▥ ' + esc(i.barcode) + '</span>' : '') +
           '<span title="' + esc(new Date(i.updatedAt).toLocaleString('en-CA')) + '">Updated ' + relTime(i.updatedAt) + '</span>' +
           (i.notes ? '<span class="notes">' + esc(i.notes) + '</span>' : '') +
         '</div>' +
@@ -214,7 +231,7 @@
   });
 
   var editingId = null;
-  function openItemForm(id) {
+  function openItemForm(id, prefill) {
     editingId = id || null;
     var f = $('#itemForm');
     f.reset();
@@ -227,9 +244,11 @@
       f.name.value = it.name; f.category.value = it.category; f.location.value = it.location || '';
       f.quantity.value = it.quantity; f.unit.value = it.unit; f.threshold.value = it.threshold || 0;
       f.cost.value = it.cost != null ? it.cost : ''; f.supplier.value = it.supplier || ''; f.notes.value = it.notes || '';
+      f.barcode.value = it.barcode || '';
     } else if (ui.category) {
       f.category.value = ui.category;
     }
+    if (!it && prefill && prefill.barcode) f.barcode.value = prefill.barcode;
     openDialog($('#itemDialog'));
     setTimeout(function () { f.name.focus(); }, 30);
   }
@@ -239,12 +258,15 @@
     var f = e.target;
     var name = f.name.value.trim();
     var qty = num(f.quantity.value, NaN);
-    var err = !name ? 'Give the item a name.' : (!isFinite(qty) || qty < 0) ? 'Quantity must be 0 or more.' : '';
+    var barcode = cleanCode(f.barcode.value);
+    var dupe = barcode ? findByBarcode(barcode) : null;
+    var err = !name ? 'Give the item a name.' : (!isFinite(qty) || qty < 0) ? 'Quantity must be 0 or more.' :
+      (dupe && dupe.id !== editingId) ? 'That barcode is already on “' + dupe.name + '”.' : '';
     if (err) { $('#formError').textContent = err; $('#formError').hidden = false; return; }
     var data = {
       name: name, category: f.category.value, location: f.location.value.trim(), unit: f.unit.value,
       threshold: Math.max(0, num(f.threshold.value, 0)), cost: num(f.cost.value, null),
-      supplier: f.supplier.value.trim(), notes: f.notes.value.trim()
+      supplier: f.supplier.value.trim(), notes: f.notes.value.trim(), barcode: barcode
     };
     if (data.cost != null && data.cost < 0) data.cost = null;
     if (editingId) {
@@ -315,25 +337,29 @@
 
   // ---------- list actions (delegated) ----------
   var quickTimers = {};
+  function quickAdjust(it, dir) {
+    var id = it.id;
+    if (dir < 0 && it.quantity <= 0) return;
+    var delta = dir > 0 ? 1 : -Math.min(1, it.quantity);
+    // merge rapid taps into one history entry
+    var last = it.history[0];
+    if (quickTimers[id] && last && last.type === 'adjust') {
+      it.quantity = round(Math.max(0, it.quantity + delta));
+      last.change = round(last.change + delta); last.qtyAfter = it.quantity; it.updatedAt = nowIso();
+      if (last.change === 0) it.history.shift();
+    } else {
+      recordChange(it, 'adjust', delta, 'Quick +/-');
+    }
+    clearTimeout(quickTimers[id]);
+    quickTimers[id] = setTimeout(function () { delete quickTimers[id]; }, 4000);
+    save(); render();
+  }
   $('#list').addEventListener('click', function (e) {
     var btn = e.target.closest('button[data-act]'); if (!btn) return;
     var id = btn.closest('.item').dataset.id, it = findItem(id); if (!it) return;
     var act = btn.dataset.act;
     if (act === 'inc' || act === 'dec') {
-      if (act === 'dec' && it.quantity <= 0) return;
-      var delta = act === 'inc' ? 1 : -Math.min(1, it.quantity);
-      // merge rapid taps into one history entry
-      var last = it.history[0];
-      if (quickTimers[id] && last && last.type === 'adjust') {
-        it.quantity = round(Math.max(0, it.quantity + delta));
-        last.change = round(last.change + delta); last.qtyAfter = it.quantity; it.updatedAt = nowIso();
-        if (last.change === 0) it.history.shift();
-      } else {
-        recordChange(it, 'adjust', delta, 'Quick +/-');
-      }
-      clearTimeout(quickTimers[id]);
-      quickTimers[id] = setTimeout(function () { delete quickTimers[id]; }, 4000);
-      save(); render();
+      quickAdjust(it, act === 'inc' ? 1 : -1);
     } else if (act === 'log') openLog(id);
     else if (act === 'history') openHistory(id);
     else if (act === 'edit') openItemForm(id);
@@ -398,9 +424,9 @@
     return /[",\n\r]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
   }
   function toCSV() {
-    var head = ['Name', 'Category', 'Quantity', 'Unit', 'Location', 'Low-stock threshold', 'Low stock?', 'Cost per unit (CAD)', 'Total value (CAD)', 'Supplier', 'Notes', 'Last updated', 'Example data'];
+    var head = ['Name', 'Category', 'Quantity', 'Unit', 'Location', 'Low-stock threshold', 'Low stock?', 'Cost per unit (CAD)', 'Total value (CAD)', 'Supplier', 'Notes', 'Barcode', 'Last updated', 'Example data'];
     var rows = state.items.map(function (i) {
-      return [i.name, i.category, i.quantity, i.unit, i.location, i.threshold, isLow(i) ? 'yes' : 'no', i.cost != null ? i.cost : '', i.cost != null ? itemValue(i).toFixed(2) : '', i.supplier, i.notes, i.updatedAt, i.example ? 'yes' : 'no'];
+      return [i.name, i.category, i.quantity, i.unit, i.location, i.threshold, isLow(i) ? 'yes' : 'no', i.cost != null ? i.cost : '', i.cost != null ? itemValue(i).toFixed(2) : '', i.supplier, i.notes, i.barcode || '', i.updatedAt, i.example ? 'yes' : 'no'];
     });
     return [head].concat(rows).map(function (r) { return r.map(csvCell).join(','); }).join('\r\n');
   }
@@ -420,6 +446,7 @@
       quantity: Math.max(0, num(r.quantity, 0)), unit: UNITS.indexOf(r.unit) >= 0 ? r.unit : 'each',
       location: String(r.location || ''), threshold: Math.max(0, num(r.threshold, 0)),
       cost: num(r.cost, null), supplier: String(r.supplier || ''), notes: String(r.notes || ''),
+      barcode: cleanCode(r.barcode),
       createdAt: r.createdAt || at, updatedAt: at, example: !!r.example,
       history: Array.isArray(r.history) ? r.history.filter(function (h) { return h && typeof h === 'object'; }).map(function (h) {
         return { id: String(h.id || uid()), date: String(h.date || at.slice(0, 10)), at: h.at || at, type: String(h.type || 'adjust'), change: num(h.change, 0), qtyAfter: num(h.qtyAfter, 0), note: String(h.note || '') };
@@ -449,8 +476,226 @@
     clearTimeout(toastTimer); toastTimer = setTimeout(function () { t.hidden = true; }, 2600);
   }
 
+  // ---------- barcode scanning ----------
+  // Native BarcodeDetector where the browser has it (Chrome/Edge on Android, Chrome on macOS);
+  // otherwise html5-qrcode (ZXing-based) from a pinned CDN URL, loaded only when first needed (iOS Safari, Firefox, desktop Chrome on Windows/Linux).
+  var FALLBACK_LIB = 'https://cdn.jsdelivr.net/npm/html5-qrcode@2.3.8/html5-qrcode.min.js';
+  var FALLBACK_SRI = 'sha384-c9d8RFSL+u3exBOJ4Yp3HUJXS4znl9f+z66d1y54ig+ea249SpqR+w1wyvXz/lk+';
+  var WANTED_FORMATS = ['ean_13', 'ean_8', 'upc_a', 'upc_e', 'code_128', 'code_39', 'qr_code', 'itf', 'data_matrix'];
+  var scan = { mode: 'lookup', stream: null, timer: null, h5: null, busy: false, session: 0 };
+  var libPromise = null;
+
+  function setScanStatus(msg, isError) {
+    var el = $('#scanStatus'); el.textContent = msg; el.classList.toggle('error-msg', !!isError);
+  }
+  function loadFallbackLib() {
+    if (window.Html5Qrcode) return Promise.resolve();
+    if (libPromise) return libPromise;
+    libPromise = new Promise(function (resolve, reject) {
+      var s = document.createElement('script');
+      s.src = FALLBACK_LIB; s.integrity = FALLBACK_SRI; s.crossOrigin = 'anonymous'; s.async = true;
+      s.onload = function () { window.Html5Qrcode ? resolve() : reject(new Error('Scanner library did not load')); };
+      s.onerror = function () { libPromise = null; reject(new Error('Could not download the scanner library (are you offline?)')); };
+      document.head.appendChild(s);
+    });
+    return libPromise;
+  }
+  function nativeFormats() {
+    if (!('BarcodeDetector' in window) || typeof window.BarcodeDetector.getSupportedFormats !== 'function') return Promise.resolve([]);
+    return window.BarcodeDetector.getSupportedFormats().then(function (f) {
+      return WANTED_FORMATS.filter(function (x) { return f.indexOf(x) >= 0; });
+    }).catch(function () { return []; });
+  }
+  function cameraErrorMessage(err) {
+    var n = err && err.name || '', m = String(err && err.message || err || '');
+    if (n === 'NotAllowedError' || n === 'SecurityError' || /permission|denied|notallowed/i.test(m))
+      return 'Camera access was blocked. Type the barcode below, or allow camera access for this site in your browser settings and try again.';
+    if (n === 'NotFoundError' || n === 'OverconstrainedError' || /not ?found|no camera|requested device/i.test(m))
+      return 'No camera found on this device. Type the barcode below instead.';
+    if (n === 'NotReadableError' || /in use|could not start/i.test(m))
+      return 'The camera is busy in another app. Close it and try again, or type the barcode below.';
+    if (n === 'NotSupportedError' || /notsupported/i.test(m))
+      return 'This browser can’t open the camera on this page. Type the barcode below instead.';
+    return 'Couldn’t start the camera (' + (m.replace(/^Error getting userMedia, error = /i, '') || n || 'unknown error') + '). Type the barcode below instead.';
+  }
+
+  function openScanner(mode) {
+    scan.mode = mode || 'lookup';
+    scan.session++;
+    $('#scanTitle').textContent = scan.mode === 'fill' ? 'Scan into barcode field' : 'Scan a barcode';
+    $('#manualCode').value = '';
+    $('#manualGo').textContent = scan.mode === 'fill' ? 'Use this code' : 'Look up';
+    openDialog($('#scanDialog'));
+    startCamera(scan.session);
+  }
+
+  function startCamera(session) {
+    var view = $('#scanView'), video = $('#scanVideo');
+    view.hidden = false; video.hidden = true; $('#scanFrame').hidden = true; $('#scanReader').innerHTML = '';
+    if (!window.isSecureContext || !navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+      view.hidden = true;
+      setScanStatus('The camera isn’t available here (it needs a secure https:// page and a browser with camera support). Type the barcode below instead.', true);
+      return;
+    }
+    setScanStatus('Starting camera…');
+    nativeFormats().then(function (formats) {
+      if (session !== scan.session) return;
+      if (formats.length) return startNative(session, formats);
+      return startFallback(session);
+    }).catch(function (err) {
+      if (session !== scan.session) return;
+      stopCamera(); view.hidden = true;
+      setScanStatus(cameraErrorMessage(err), true);
+      setTimeout(function () { $('#manualCode').focus(); }, 30);
+    });
+  }
+
+  function startNative(session, formats) {
+    var detector = new window.BarcodeDetector({ formats: formats });
+    var video = $('#scanVideo');
+    return navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: 'environment' }, width: { ideal: 1280 }, height: { ideal: 720 } }, audio: false })
+      .then(function (stream) {
+        if (session !== scan.session) { stream.getTracks().forEach(function (t) { t.stop(); }); return; }
+        scan.stream = stream;
+        video.srcObject = stream; video.hidden = false; $('#scanFrame').hidden = false;
+        return video.play().then(function () {
+          setScanStatus('Point the camera at a barcode or QR code.');
+          var tick = function () {
+            if (session !== scan.session || !scan.stream) return;
+            if (video.readyState < 2) { scan.timer = setTimeout(tick, 150); return; }
+            detector.detect(video).then(function (codes) {
+              if (session !== scan.session) return;
+              var hit = codes && codes.find(function (c) { return c.rawValue; });
+              if (hit) onDetected(hit.rawValue); else scan.timer = setTimeout(tick, 120);
+            }).catch(function () { scan.timer = setTimeout(tick, 250); });
+          };
+          tick();
+        });
+      });
+  }
+
+  function startFallback(session) {
+    setScanStatus('Loading scanner…');
+    return loadFallbackLib().then(function () {
+      if (session !== scan.session) return;
+      var F = window.Html5QrcodeSupportedFormats;
+      var fmts = F ? [F.EAN_13, F.EAN_8, F.UPC_A, F.UPC_E, F.CODE_128, F.CODE_39, F.QR_CODE, F.ITF, F.DATA_MATRIX].filter(function (x) { return x != null; }) : undefined;
+      var h5 = new window.Html5Qrcode('scanReader', { formatsToSupport: fmts, verbose: false, experimentalFeatures: { useBarCodeDetectorIfSupported: true } });
+      scan.h5 = h5;
+      return h5.start({ facingMode: 'environment' }, {
+        fps: 10,
+        qrbox: function (w, h) { var bw = Math.floor(Math.min(w * 0.85, 360)); return { width: bw, height: Math.floor(Math.min(h * 0.6, bw * 0.6)) }; }
+      }, function (text) { if (session === scan.session) onDetected(text); }, function () { /* no code in this frame */ })
+        .then(function () { if (session === scan.session) setScanStatus('Point the camera at a barcode or QR code.'); else stopCamera(); });
+    });
+  }
+
+  function stopCamera() {
+    clearTimeout(scan.timer); scan.timer = null;
+    if (scan.stream) { scan.stream.getTracks().forEach(function (t) { t.stop(); }); scan.stream = null; }
+    var v = $('#scanVideo'); if (v) { try { v.pause(); } catch (e) {} v.srcObject = null; }
+    if (scan.h5) {
+      var h5 = scan.h5; scan.h5 = null;
+      try { var p = h5.stop(); if (p && p.then) p.then(function () { try { h5.clear(); } catch (e) {} }).catch(function () {}); } catch (e) {}
+    }
+  }
+  $('#scanDialog').addEventListener('close', function () { scan.session++; stopCamera(); });
+
+  function onDetected(code) {
+    code = cleanCode(code); if (!code) return;
+    if (navigator.vibrate) { try { navigator.vibrate(60); } catch (e) {} }
+    scan.session++; stopCamera(); closeDialog($('#scanDialog'));
+    if (scan.mode === 'fill') {
+      $('#fBarcode').value = code;
+      var dupe = findByBarcode(code);
+      toast(dupe && dupe.id !== editingId ? 'Heads up: that barcode is already on “' + dupe.name + '”.' : 'Barcode added: ' + code);
+    } else {
+      handleScan(code);
+    }
+  }
+
+  $('#manualForm').addEventListener('submit', function (e) {
+    e.preventDefault();
+    var code = cleanCode($('#manualCode').value);
+    if (!code) { setScanStatus('Type a barcode number first.', true); $('#manualCode').focus(); return; }
+    onDetected(code);
+  });
+
+  // ---------- scan result ----------
+  var resultCode = '';
+  function handleScan(code) {
+    resultCode = cleanCode(code);
+    var it = findByBarcode(resultCode);
+    if (it) showFound(it); else showNotFound(resultCode);
+    var d = $('#scanResultDialog'); if (!d.open) openDialog(d);
+  }
+  function showFound(it) {
+    var low = isLow(it);
+    $('#scanResult').innerHTML =
+      '<p class="muted small-cap">Scanned ▥ ' + esc(resultCode) + '</p>' +
+      '<h2 class="sr-name">' + esc(it.name) + '</h2>' +
+      '<div class="tags">' + '<span class="tag">' + esc(it.category) + '</span>' +
+        (it.location ? '<span class="tag loc">📍 ' + esc(it.location) + '</span>' : '') +
+        (low ? '<span class="tag lowtag">LOW STOCK</span>' : '') + '</div>' +
+      '<div class="qty-row sr-qty' + (low ? ' low' : '') + '" data-id="' + it.id + '"><div class="qty" id="srQty">' + numFmt.format(it.quantity) + '<small>' + esc(it.unit) + '</small></div>' +
+        '<div class="steppers"><button type="button" class="step" data-sr="dec" aria-label="Decrease ' + esc(it.name) + ' by 1">−</button><button type="button" class="step" data-sr="inc" aria-label="Increase ' + esc(it.name) + ' by 1">+</button></div></div>' +
+      '<div class="sr-actions">' +
+        '<button type="button" class="btn primary" data-sr="use">Log usage</button>' +
+        '<button type="button" class="btn primary" data-sr="delivery">Log delivery</button>' +
+        '<button type="button" class="btn" data-sr="history">History</button>' +
+        '<button type="button" class="btn" data-sr="edit">Edit</button>' +
+      '</div>' +
+      '<div class="dialog-actions"><button type="button" class="btn ghost" data-sr="again">📷 Scan another</button><button type="button" class="btn primary" data-sr="done">Done</button></div>';
+    $('#scanResult').dataset.id = it.id;
+  }
+  function showNotFound(code) {
+    var opts = state.items.slice().sort(function (a, b) { return a.name.localeCompare(b.name, 'en-CA', { sensitivity: 'base' }); })
+      .map(function (i) { return '<option value="' + i.id + '">' + esc(i.name) + (i.barcode ? ' (has ' + esc(i.barcode) + ')' : '') + '</option>'; }).join('');
+    $('#scanResult').dataset.id = '';
+    $('#scanResult').innerHTML =
+      '<p class="muted small-cap">Scanned ▥ ' + esc(code) + '</p>' +
+      '<h2>No item with this barcode yet</h2>' +
+      '<p class="muted">Add it as a new item, or attach this barcode to something you already track.</p>' +
+      '<div class="sr-actions"><button type="button" class="btn primary" data-sr="add">+ Add new item</button></div>' +
+      (state.items.length ?
+        '<div class="link-box"><label for="linkSelect">Link to existing item</label><div class="input-with-btn">' +
+        '<select id="linkSelect">' + opts + '</select><button type="button" class="btn" data-sr="link">Link</button></div></div>' : '') +
+      '<div class="dialog-actions"><button type="button" class="btn ghost" data-sr="again">📷 Scan again</button><button type="button" class="btn ghost" data-sr="done">Cancel</button></div>';
+  }
+  $('#scanResultDialog').addEventListener('click', function (e) {
+    var d = $('#scanResultDialog');
+    if (e.target === d) { closeDialog(d); return; }
+    var b = e.target.closest('[data-sr]'); if (!b) return;
+    var act = b.dataset.sr, it = findItem($('#scanResult').dataset.id);
+    if (act === 'done') closeDialog(d);
+    else if (act === 'again') { closeDialog(d); openScanner('lookup'); }
+    else if (act === 'add') { closeDialog(d); openItemForm(null, { barcode: resultCode }); }
+    else if (act === 'link') {
+      var target = findItem($('#linkSelect').value); if (!target) return;
+      var go = function () {
+        target.barcode = resultCode; target.updatedAt = nowIso(); target.example = false;
+        save(); render(); toast('Linked ' + resultCode + ' to ' + target.name);
+        showFound(target);
+      };
+      if (target.barcode && codeKey(target.barcode) !== codeKey(resultCode)) {
+        confirmBox('Replace barcode?', '“' + target.name + '” already has barcode ' + target.barcode + '. Replace it with ' + resultCode + '?', 'Replace', go);
+      } else go();
+    }
+    else if (!it) return;
+    else if (act === 'inc' || act === 'dec') { quickAdjust(it, act === 'inc' ? 1 : -1); showFound(it); }
+    else if (act === 'use' || act === 'delivery') {
+      closeDialog(d); openLog(it.id);
+      var r = $('#logForm').querySelector('input[name=kind][value=' + act + ']'); if (r) r.checked = true;
+    }
+    else if (act === 'history') { closeDialog(d); openHistory(it.id); }
+    else if (act === 'edit') { closeDialog(d); openItemForm(it.id); }
+  });
+
+  $('#scanBtn').addEventListener('click', function () { openScanner('lookup'); });
+  $('#formScanBtn').addEventListener('click', function () { openScanner('fill'); });
+
   // expose a tiny API for testing/debugging
-  window.FarmInventory = { state: function () { return state; }, toCSV: toCSV, importData: importData, isLow: isLow };
+  window.FarmInventory = { state: function () { return state; }, toCSV: toCSV, importData: importData, isLow: isLow, handleScan: handleScan, findByBarcode: findByBarcode };
 
   save();
   render();

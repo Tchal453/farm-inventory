@@ -92,6 +92,33 @@ dialog h2{margin:0 0 12px;font-size:1.2rem}
 .hist .when{font-size:.8rem;color:var(--muted);text-align:right}
 .toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);background:#1f2a22;color:#fff;padding:12px 18px;border-radius:12px;box-shadow:0 8px 24px rgba(0,0,0,.25);z-index:50;max-width:90vw}
 .toast[hidden]{display:none}
+.btn.scan-btn{background:#fff;color:var(--green)}
+.input-with-btn{display:flex;gap:6px;align-items:stretch}
+.input-with-btn input,.input-with-btn select{flex:1;min-width:0;padding:10px;border:1px solid var(--line);border-radius:10px;background:#fff;color:var(--ink);font-weight:400;min-height:44px}
+.input-with-btn .btn{flex:0 0 auto}
+.grid .input-with-btn .btn.small{min-height:44px;background:#f3efe6;color:var(--ink)}
+.meta .barcode{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;letter-spacing:.02em}
+.scan-view{position:relative;background:#111;border-radius:12px;overflow:hidden;min-height:220px;display:flex;align-items:center;justify-content:center}
+.scan-view[hidden]{display:none}
+.scan-view video{width:100%;max-height:55vh;object-fit:cover;display:block}
+.scan-view video[hidden]{display:none}
+#scanReader{width:100%}
+#scanReader:empty{display:none}
+#scanReader video{width:100%!important;display:block}
+.scan-frame{position:absolute;left:10%;right:10%;top:30%;bottom:30%;border:3px solid var(--wheat);border-radius:12px;box-shadow:0 0 0 999px rgba(0,0,0,.25);pointer-events:none}
+.scan-frame[hidden]{display:none}
+.scan-status{margin:10px 0;font-size:.95rem}
+.scan-status.error-msg{color:var(--red);background:var(--red-bg);border-radius:10px;padding:10px 12px}
+.manual-form{padding:0!important}
+#scanTitle:focus{outline:none}
+.manual-form label,.link-box label{display:block;font-size:.85rem;font-weight:600;color:var(--muted);margin-bottom:4px}
+.link-box{margin-top:14px;padding-top:12px;border-top:1px solid var(--line)}
+.small-cap{font-size:.8rem;margin:0 0 4px;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+.sr-name{margin-bottom:6px!important}
+.sr-qty{margin:14px 0}
+.sr-qty.low .qty{color:var(--red)}
+.sr-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.sr-actions .btn:not(.primary){background:#f3efe6}
 @media (max-width:760px){
   .controls{grid-template-columns:1fr 1fr}
   .controls input[type=search]{grid-column:1/-1}
@@ -110,4 +137,8 @@ dialog h2{margin:0 0 12px;font-size:1.2rem}
   .cat-row{grid-template-columns:120px 1fr 92px;font-size:.85rem}
   .grid{grid-template-columns:1fr}
   .grid .full{grid-column:auto}
+  /* big thumb-reach Scan button on phones */
+  .btn.scan-btn{position:fixed;right:16px;bottom:calc(16px + env(safe-area-inset-bottom));z-index:20;background:var(--green);color:#fff;border-radius:999px;padding:14px 22px;min-height:56px;font-size:1.05rem;box-shadow:0 6px 20px rgba(0,0,0,.3)}
+  .wrap{padding-bottom:90px}
+  .toast{bottom:calc(86px + env(safe-area-inset-bottom))}
 }

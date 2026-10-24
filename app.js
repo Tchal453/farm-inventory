@@ -584,7 +584,7 @@
       scan.h5 = h5;
       return h5.start({ facingMode: 'environment' }, {
         fps: 10,
-        qrbox: function (w, h) { var bw = Math.floor(Math.min(w * 0.85, 360)); return { width: bw, height: Math.floor(Math.min(h * 0.6, bw * 0.6)) }; }
+        qrbox: function (w, h) { var bw = Math.max(50, Math.floor(Math.min(w * 0.85, 360))); return { width: bw, height: Math.max(50, Math.floor(Math.min(h * 0.6, bw * 0.6))) }; }
       }, function (text) { if (session === scan.session) onDetected(text); }, function () { /* no code in this frame */ })
         .then(function () { if (session === scan.session) setScanStatus('Point the camera at a barcode or QR code.'); else stopCamera(); });
     });

@@ -324,7 +324,7 @@
         '<div><span class="dot cost"></span>At cost<strong id="vcCost">' + cad.format(t.cost) + '</strong><small>' + counts.cost + ' items</small></div>' +
       '</div>' +
       (counts.none ? '<p class="muted small">' + counts.none + ' item' + (counts.none > 1 ? 's have' : ' has') + ' no price or cost and ' + (counts.none > 1 ? 'aren’t' : 'isn’t') + ' counted.</p>' : '') +
-      '<p class="muted small" id="priceStatus">' + esc(st) + (prices.fileGeneratedAt ? ' Futures as of ' + esc(fmtTime(prices.fileGeneratedAt)) + '.' : '') +
+      '<p class="muted small" id="priceStatus">' + esc(st) + (prices.fileGeneratedAt ? ' Futures as of ' + esc(fmtTime(prices.fileGeneratedAt)).replace(/\.$/, '') + '.' : '') +
         (fx ? ' US$1 = C$' + fx.USDCAD.toFixed(4) + ' (' + esc(fx.source || 'Bank of Canada') + ', ' + esc(fx.date || '') + ').' : '') + '</p>' +
       '<details class="quotes"><summary>Live futures prices (CAD)</summary><table><thead><tr><th>Commodity</th><th>Futures quote</th><th>In CAD</th></tr></thead><tbody>' + rows + '</tbody></table>' +
       '<p class="muted tiny">Futures reference prices (front month, delayed) from Yahoo Finance for CBOT/CME/NYMEX and TradingView for MIAX spring wheat, converted to CAD at the Bank of Canada rate. They are <strong>not your local cash price</strong> — add a basis on each item to match your elevator or auction, or set your own price. Canola, durum, barley, peas, lentils, flax and other crops have no free live feed here, so enter your price for those.</p></details>';

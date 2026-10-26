@@ -56,7 +56,7 @@
       { name: 'Diesel (dyed)', category: 'Fuel', quantity: 1850, unit: 'litres', location: 'Fuel tank', threshold: 500, cost: 1.38, supplier: 'Federated Co-op', notes: '3000 L tank.', days: 1 },
       { name: 'Hydraulic oil (UTF)', category: 'Parts & Supplies', quantity: 3, unit: 'each', location: 'Shop', threshold: 2, cost: 89.99, supplier: 'Peavey Mart', notes: '18.9 L pails.', days: 30 },
       { name: 'Bred heifers', category: 'Livestock', quantity: 24, unit: 'head', location: 'East pasture', threshold: 0, cost: 2900, supplier: '', notes: 'Calving starts mid-March.', days: 45 },
-      { name: 'CWRS wheat 2026', category: 'Harvested Grain', quantity: 6200, unit: 'bushels', location: 'Quonset', threshold: 0, cost: 8.15, supplier: '', notes: 'Grade #2, 13.4% protein. Waiting on contract. Valued off KC wheat futures — set a basis to match your elevator.', days: 9, commodity: 'wheat_hrw' }
+      { name: 'CWRS wheat 2026', category: 'Harvested Grain', quantity: 6200, unit: 'bushels', location: 'Quonset', threshold: 0, cost: 8.15, supplier: '', notes: 'Grade #2, 13.4% protein. Waiting on contract. Valued off Minneapolis hard red spring wheat futures — set a basis to match your elevator.', days: 9, commodity: 'wheat_cwrs' }
     ];
     return ex.map(function (e) {
       var at = daysAgoIso(e.days);
@@ -85,7 +85,8 @@
   // buLb = Canadian standard bushel weight used for your stored bushels; futBuLb = bushel weight of the futures contract.
   // Wheat/durum/soybeans/peas/lentils 60 lb, corn/flax/rye 56 lb, canola/mustard/canaryseed 50 lb, barley 48 lb, oats 34 lb (CBOT oats contract: 32 lb).
   var COMMODITIES = [
-    { id: 'wheat_hrw', short: 'KC HRW wheat', label: 'Wheat — KC hard red winter futures', kind: 'grain', symbol: 'KE=F', futBuLb: 60, buLb: 60, hint: 'Closest live proxy for CWRS. Set a basis to match your elevator.' },
+    { id: 'wheat_cwrs', short: 'HRS spring wheat', label: 'Hard red spring wheat (MIAX MWE) — CWRS', kind: 'grain', symbol: 'MIAX:MWE1!', futBuLb: 60, buLb: 60, hint: 'Minneapolis hard red spring wheat futures, the closest live match for CWRS. Set a basis to match your elevator.' },
+    { id: 'wheat_hrw', short: 'KC HRW wheat', label: 'Wheat — KC hard red winter futures', kind: 'grain', symbol: 'KE=F', futBuLb: 60, buLb: 60, hint: 'Winter wheat. For CWRS, the hard red spring wheat (MIAX) link is the closer match.' },
     { id: 'wheat_srw', short: 'Chicago SRW wheat', label: 'Wheat — Chicago soft red winter futures', kind: 'grain', symbol: 'ZW=F', futBuLb: 60, buLb: 60 },
     { id: 'oats', short: 'Oats', label: 'Oats — CBOT futures', kind: 'grain', symbol: 'ZO=F', futBuLb: 32, buLb: 34 },
     { id: 'corn', short: 'Corn', label: 'Corn — CBOT futures', kind: 'grain', symbol: 'ZC=F', futBuLb: 56, buLb: 56 },
@@ -96,7 +97,6 @@
     { id: 'diesel', short: 'Diesel (ULSD)', label: 'Diesel — NY Harbor ULSD futures', kind: 'fuel', symbol: 'HO=F', hint: 'Wholesale futures before taxes, freight and margin; farm pump prices run higher. Use the basis.' },
     // No free browser-friendly live source: use "Your price" for these.
     { id: 'canola', label: 'Canola (ICE) — enter your price', kind: 'manual' },
-    { id: 'wheat_cwrs', label: 'Wheat — CWRS spring — enter your price', kind: 'manual' },
     { id: 'durum', label: 'Durum — enter your price', kind: 'manual' },
     { id: 'barley', label: 'Barley — enter your price', kind: 'manual' },
     { id: 'peas', label: 'Peas — enter your price', kind: 'manual' },
@@ -327,7 +327,7 @@
       '<p class="muted small" id="priceStatus">' + esc(st) + (prices.fileGeneratedAt ? ' Futures as of ' + esc(fmtTime(prices.fileGeneratedAt)) + '.' : '') +
         (fx ? ' US$1 = C$' + fx.USDCAD.toFixed(4) + ' (' + esc(fx.source || 'Bank of Canada') + ', ' + esc(fx.date || '') + ').' : '') + '</p>' +
       '<details class="quotes"><summary>Live futures prices (CAD)</summary><table><thead><tr><th>Commodity</th><th>Futures quote</th><th>In CAD</th></tr></thead><tbody>' + rows + '</tbody></table>' +
-      '<p class="muted tiny">Futures reference prices from Yahoo Finance (CBOT/CME, delayed and front-month), converted to CAD at the Bank of Canada rate. They are <strong>not your local cash price</strong> — add a basis on each item to match your elevator or auction, or set your own price. Canola, CWRS, durum, barley, peas, lentils, flax and other crops have no free live feed here, so enter your price for those.</p></details>';
+      '<p class="muted tiny">Futures reference prices (front month, delayed) from Yahoo Finance for CBOT/CME/NYMEX and TradingView for MIAX spring wheat, converted to CAD at the Bank of Canada rate. They are <strong>not your local cash price</strong> — add a basis on each item to match your elevator or auction, or set your own price. Canola, durum, barley, peas, lentils, flax and other crops have no free live feed here, so enter your price for those.</p></details>';
     $('#refreshPrices').onclick = function () { refreshPrices(true); };
   }
 

@@ -1,36 +1,36 @@
 {
-  "generatedAt": "2026-10-26T04:14:53.057Z",
-  "source": "Yahoo Finance (exchange futures, delayed ~10-20 min) + Bank of Canada USD/CAD",
+  "generatedAt": "2026-10-26T04:29:10.295Z",
+  "source": "Yahoo Finance (CBOT/CME/NYMEX futures, delayed ~10-20 min) + TradingView (MIAX spring wheat, delayed ~10 min) + Bank of Canada USD/CAD",
   "quotes": {
     "ZC=F": {
-      "price": 451.25,
+      "price": 451.5,
       "prevClose": 456,
       "currency": "USX",
-      "time": "2026-10-26T04:01:55.000Z",
+      "time": "2026-10-26T04:16:36.000Z",
       "name": "Corn Futures,Dec-2026",
       "exchange": "CBOT"
     },
     "ZS=F": {
-      "price": 1240,
+      "price": 1240.5,
       "prevClose": 1256.5,
       "currency": "USX",
-      "time": "2026-10-26T04:03:23.000Z",
+      "time": "2026-10-26T04:17:36.000Z",
       "name": "Soybean Futures,Nov-2026",
       "exchange": "CBOT"
     },
     "ZW=F": {
-      "price": 622.75,
+      "price": 623.5,
       "prevClose": 625,
       "currency": "USX",
-      "time": "2026-10-26T04:02:52.000Z",
+      "time": "2026-10-26T04:17:04.000Z",
       "name": "Chicago SRW Wheat Futures,Dec-2",
       "exchange": "CBOT"
     },
     "KE=F": {
-      "price": 660.25,
+      "price": 661.25,
       "prevClose": 664.5,
       "currency": "USX",
-      "time": "2026-10-26T04:01:23.000Z",
+      "time": "2026-10-26T04:13:16.000Z",
       "name": "KC HRW Wheat Futures,Dec-2026",
       "exchange": "CBOT"
     },
@@ -67,12 +67,20 @@
       "exchange": "CME"
     },
     "HO=F": {
-      "price": 4.719,
+      "price": 4.724,
       "prevClose": 4.787,
       "currency": "USD",
-      "time": "2026-10-26T04:03:20.000Z",
+      "time": "2026-10-26T04:18:24.000Z",
       "name": "Heating Oil Dec 26",
       "exchange": "NY Mercantile"
+    },
+    "MIAX:MWE1!": {
+      "price": 6.415,
+      "prevClose": 6.4175,
+      "currency": "USD",
+      "time": "2026-10-23T18:19:57.000Z",
+      "name": "Hard Red Spring Wheat (MW) Futures",
+      "exchange": "MIAX"
     }
   },
   "fx": {

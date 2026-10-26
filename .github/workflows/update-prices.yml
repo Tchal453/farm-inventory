@@ -1,0 +1,26 @@
+name: Update commodity prices
+on:
+  schedule:
+    # every hour, every day (futures trade Sun evening–Fri; the script skips the commit when nothing changed)
+    - cron: '17 * * * *'
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency: update-prices
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: node scripts/update-prices.mjs
+      - name: Commit prices.json if it changed
+        run: |
+          if git diff --quiet -- prices.json; then echo "No changes"; exit 0; fi
+          git config user.name "farm-inventory-bot"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add prices.json
+          git commit -m "Update commodity prices"
+          git push

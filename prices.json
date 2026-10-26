@@ -1,20 +1,20 @@
 {
-  "generatedAt": "2026-10-26T07:00:21.100Z",
+  "generatedAt": "2026-10-26T08:00:05.666Z",
   "source": "Yahoo Finance (CBOT/CME/NYMEX futures, delayed ~10-20 min) + TradingView (MIAX spring wheat, delayed ~10 min) + Bank of Canada USD/CAD",
   "quotes": {
     "ZC=F": {
-      "price": 452,
+      "price": 452.5,
       "prevClose": 456,
       "currency": "USX",
-      "time": "2026-10-26T06:49:34.000Z",
+      "time": "2026-10-26T07:49:57.000Z",
       "name": "Corn Futures,Dec-2026",
       "exchange": "CBOT"
     },
     "ZS=F": {
-      "price": 1243.25,
-      "prevClose": 1256.5,
+      "price": 1254,
+      "prevClose": 1268.5,
       "currency": "USX",
-      "time": "2026-10-26T06:48:56.000Z",
+      "time": "2026-10-26T07:49:57.000Z",
       "name": "Soybean Futures,Nov-2026",
       "exchange": "CBOT"
     },
@@ -22,7 +22,7 @@
       "price": 624.5,
       "prevClose": 625,
       "currency": "USX",
-      "time": "2026-10-26T06:49:20.000Z",
+      "time": "2026-10-26T07:49:57.000Z",
       "name": "Chicago SRW Wheat Futures,Dec-2",
       "exchange": "CBOT"
     },
@@ -30,7 +30,7 @@
       "price": 661.75,
       "prevClose": 664.5,
       "currency": "USX",
-      "time": "2026-10-26T06:49:34.000Z",
+      "time": "2026-10-26T07:49:58.000Z",
       "name": "KC HRW Wheat Futures,Dec-2026",
       "exchange": "CBOT"
     },
@@ -51,10 +51,10 @@
       "exchange": "CME"
     },
     "GF=F": {
-      "price": 345.35,
-      "prevClose": 345.35,
+      "price": 348.125,
+      "prevClose": 348.125,
       "currency": "USX",
-      "time": "2026-10-23T18:04:58.000Z",
+      "time": "2026-10-23T18:04:55.000Z",
       "name": "Feeder Cattle Futures,Jan-2027",
       "exchange": "CME"
     },
@@ -67,10 +67,10 @@
       "exchange": "CME"
     },
     "HO=F": {
-      "price": 4.735,
+      "price": 4.739,
       "prevClose": 4.787,
       "currency": "USD",
-      "time": "2026-10-26T06:49:40.000Z",
+      "time": "2026-10-26T07:49:53.000Z",
       "name": "Heating Oil Dec 26",
       "exchange": "NY Mercantile"
     },

@@ -142,3 +142,33 @@ dialog h2{margin:0 0 12px;font-size:1.2rem}
   .wrap{padding-bottom:90px}
   .toast{bottom:calc(86px + env(safe-area-inset-bottom))}
 }
+/* ---- inventory value & commodity prices (v1.2) ---- */
+.grid label[hidden],.price-fields[hidden]{display:none}
+.price-fields{grid-column:1/-1;background:#f7f9f4;border:1px solid var(--line);border-radius:12px;padding:10px}
+.price-preview{margin:8px 0 0;font-size:.85rem;color:var(--ink)}
+.price-preview:empty{display:none}
+.value-card .vc-head{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.value-card .vc-head h2{margin:0}
+.vc-total{font-size:2rem;font-weight:800;color:var(--green);margin:6px 0 8px}
+.vc-split{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;font-size:.85rem;color:var(--muted)}
+.vc-split>div{background:var(--bg);border-radius:10px;padding:8px 10px;display:flex;flex-direction:column}
+.vc-split strong{color:var(--ink);font-size:1.05rem}
+.vc-split small{font-size:.75rem}
+.dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:5px;vertical-align:middle}
+.dot.market{background:var(--green-2)}.dot.manual{background:var(--wheat)}.dot.cost{background:#9aa39d}
+.muted.small{font-size:.82rem;margin:8px 0 0}
+.tiny{font-size:.74rem}
+.quotes{margin-top:8px}
+.quotes summary{cursor:pointer;font-weight:600;font-size:.9rem;padding:6px 0}
+.quotes table{width:100%;border-collapse:collapse;font-size:.85rem}
+.quotes th,.quotes td{text-align:left;padding:6px 4px;border-top:1px solid var(--line);vertical-align:top}
+.quotes th{font-size:.75rem;text-transform:uppercase;color:var(--muted);letter-spacing:.03em}
+.quotes .cadp{font-weight:600}
+.up{color:var(--green-2);font-size:.78rem}.down{color:var(--red);font-size:.78rem}
+.pricebox{grid-column:1/-1;color:var(--ink)}
+.pricebox em{font-style:normal;color:var(--muted);font-size:.8rem}
+.pricebox.market .item-value{color:var(--green)}
+.tag.commodity{background:#e6f0e3;color:var(--green);justify-self:start}
+.price-note{grid-column:1/-1;font-size:.8rem}
+button.stat#valueStat{cursor:pointer}
+@media (max-width:560px){.vc-split{grid-template-columns:1fr}.vc-split>div{flex-direction:row;align-items:baseline;gap:6px;flex-wrap:wrap}.vc-split strong{margin-left:auto}.vc-total{font-size:1.7rem}}

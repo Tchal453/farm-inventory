@@ -1,10 +1,10 @@
-/* Farm Inventory v1.1 — vanilla JS, data in localStorage. Barcode scanning added. */
+/* Farm Inventory v1.2 — vanilla JS, data in localStorage. Barcode scanning, commodity prices & inventory value. */
 (function () {
   'use strict';
 
   var STORAGE_KEY = 'farmInventory.v1';
   var CATEGORIES = ['Feed', 'Seed', 'Fertilizer', 'Chemicals/Spray', 'Fuel', 'Parts & Supplies', 'Equipment', 'Livestock', 'Harvested Grain', 'Other'];
-  var UNITS = ['bags', 'lbs', 'kg', 'bushels', 'litres', 'gallons', 'tonnes', 'head', 'each'];
+  var UNITS = ['bags', 'lbs', 'kg', 'cwt', 'bushels', 'litres', 'gallons', 'tonnes', 'head', 'each'];
 
   var $ = function (sel) { return document.querySelector(sel); };
   var cad = new Intl.NumberFormat('en-CA', { style: 'currency', currency: 'CAD' });
@@ -44,7 +44,7 @@
     return fmtDate(iso);
   }
   function isLow(it) { return it.threshold > 0 && it.quantity <= it.threshold; }
-  function itemValue(it) { return it.cost != null ? it.quantity * it.cost : 0; }
+  function itemValue(it) { var v = valuation(it); return v.unitPrice != null ? it.quantity * v.unitPrice : 0; }
 
   // ---------- example data ----------
   function makeExamples() {
@@ -56,17 +56,167 @@
       { name: 'Diesel (dyed)', category: 'Fuel', quantity: 1850, unit: 'litres', location: 'Fuel tank', threshold: 500, cost: 1.38, supplier: 'Federated Co-op', notes: '3000 L tank.', days: 1 },
       { name: 'Hydraulic oil (UTF)', category: 'Parts & Supplies', quantity: 3, unit: 'each', location: 'Shop', threshold: 2, cost: 89.99, supplier: 'Peavey Mart', notes: '18.9 L pails.', days: 30 },
       { name: 'Bred heifers', category: 'Livestock', quantity: 24, unit: 'head', location: 'East pasture', threshold: 0, cost: 2900, supplier: '', notes: 'Calving starts mid-March.', days: 45 },
-      { name: 'CWRS wheat 2026', category: 'Harvested Grain', quantity: 6200, unit: 'bushels', location: 'Quonset', threshold: 0, cost: 8.15, supplier: '', notes: 'Grade #2, 13.4% protein. Waiting on contract.', days: 9 }
+      { name: 'CWRS wheat 2026', category: 'Harvested Grain', quantity: 6200, unit: 'bushels', location: 'Quonset', threshold: 0, cost: 8.15, supplier: '', notes: 'Grade #2, 13.4% protein. Waiting on contract. Valued off KC wheat futures — set a basis to match your elevator.', days: 9, commodity: 'wheat_hrw' }
     ];
     return ex.map(function (e) {
       var at = daysAgoIso(e.days);
       return {
         id: uid(), name: e.name, category: e.category, quantity: e.quantity, unit: e.unit, location: e.location,
-        threshold: e.threshold, cost: e.cost, supplier: e.supplier, notes: e.notes,
+        threshold: e.threshold, cost: e.cost, supplier: e.supplier, notes: e.notes, barcode: '',
+        commodity: e.commodity || '', basis: null, marketPrice: null, headWeight: null,
         createdAt: at, updatedAt: at, example: true,
         history: [{ id: uid(), date: at.slice(0, 10), at: at, type: 'create', change: e.quantity, qtyAfter: e.quantity, note: 'Starting count (example)' }]
       };
     });
+  }
+
+  // ---------- commodity prices ----------
+  // Live quotes come from ./prices.json (same origin, refreshed by a GitHub Action from Yahoo Finance's
+  // delayed futures data — Yahoo has no CORS headers, so the browser can't call it directly) and the
+  // USD/CAD rate comes live from the Bank of Canada Valet API (CORS-enabled), falling back to the rate in prices.json.
+  // These are FUTURES reference prices in USD converted to CAD — not a local elevator / auction cash price.
+  // Use the per-item basis (+/- CAD per unit) to bring them in line with your local bids, or set your own price.
+  var PRICE_CACHE_KEY = 'farmInventory.prices';
+  var PRICES_URL = 'prices.json';
+  var BOC_URL = 'https://www.bankofcanada.ca/valet/observations/FXUSDCAD/json?recent=1';
+  var LB_KG = 0.45359237;          // 1 lb in kg (exact)
+  var US_GAL_L = 3.785411784;      // US gallon (futures contract unit), litres
+  var IMP_GAL_L = 4.54609;         // Imperial gallon (the app's "gallons" unit), litres
+  // buLb = Canadian standard bushel weight used for your stored bushels; futBuLb = bushel weight of the futures contract.
+  // Wheat/durum/soybeans/peas/lentils 60 lb, corn/flax/rye 56 lb, canola/mustard/canaryseed 50 lb, barley 48 lb, oats 34 lb (CBOT oats contract: 32 lb).
+  var COMMODITIES = [
+    { id: 'wheat_hrw', short: 'KC HRW wheat', label: 'Wheat — KC hard red winter futures', kind: 'grain', symbol: 'KE=F', futBuLb: 60, buLb: 60, hint: 'Closest live proxy for CWRS. Set a basis to match your elevator.' },
+    { id: 'wheat_srw', short: 'Chicago SRW wheat', label: 'Wheat — Chicago soft red winter futures', kind: 'grain', symbol: 'ZW=F', futBuLb: 60, buLb: 60 },
+    { id: 'oats', short: 'Oats', label: 'Oats — CBOT futures', kind: 'grain', symbol: 'ZO=F', futBuLb: 32, buLb: 34 },
+    { id: 'corn', short: 'Corn', label: 'Corn — CBOT futures', kind: 'grain', symbol: 'ZC=F', futBuLb: 56, buLb: 56 },
+    { id: 'soybeans', short: 'Soybeans', label: 'Soybeans — CBOT futures', kind: 'grain', symbol: 'ZS=F', futBuLb: 60, buLb: 60 },
+    { id: 'live_cattle', short: 'Live cattle', label: 'Live cattle — CME futures', kind: 'livestock', symbol: 'LE=F', hint: 'Per lb live weight. For “head”, set the average weight.' },
+    { id: 'feeder_cattle', short: 'Feeder cattle', label: 'Feeder cattle — CME futures', kind: 'livestock', symbol: 'GF=F', hint: 'Per lb live weight. For “head”, set the average weight.' },
+    { id: 'lean_hogs', short: 'Lean hogs', label: 'Lean hogs — CME futures', kind: 'livestock', symbol: 'HE=F', hint: 'Per lb lean carcass weight. For “head”, set the average carcass weight.' },
+    { id: 'diesel', short: 'Diesel (ULSD)', label: 'Diesel — NY Harbor ULSD futures', kind: 'fuel', symbol: 'HO=F', hint: 'Wholesale futures before taxes, freight and margin; farm pump prices run higher. Use the basis.' },
+    // No free browser-friendly live source: use "Your price" for these.
+    { id: 'canola', label: 'Canola (ICE) — enter your price', kind: 'manual' },
+    { id: 'wheat_cwrs', label: 'Wheat — CWRS spring — enter your price', kind: 'manual' },
+    { id: 'durum', label: 'Durum — enter your price', kind: 'manual' },
+    { id: 'barley', label: 'Barley — enter your price', kind: 'manual' },
+    { id: 'peas', label: 'Peas — enter your price', kind: 'manual' },
+    { id: 'lentils', label: 'Lentils — enter your price', kind: 'manual' },
+    { id: 'flax', label: 'Flax — enter your price', kind: 'manual' },
+    { id: 'rye', label: 'Rye — enter your price', kind: 'manual' },
+    { id: 'mustard', label: 'Mustard — enter your price', kind: 'manual' },
+    { id: 'canaryseed', label: 'Canaryseed — enter your price', kind: 'manual' },
+    { id: 'hay', label: 'Hay / forage — enter your price', kind: 'manual' },
+    { id: 'fertilizer', label: 'Fertilizer — enter your price', kind: 'manual' },
+    { id: 'cattle_cash', label: 'Cattle (Canadian cash/auction) — enter your price', kind: 'manual' },
+    { id: 'other', label: 'Other — enter your price', kind: 'manual' }
+  ];
+  function shortName(c) { return c.short || c.label.replace(/ — .*$/, ''); }
+  function commodityById(id) { return COMMODITIES.find(function (c) { return c.id === id; }) || null; }
+
+  var prices = loadPriceCache();
+  function loadPriceCache() {
+    try { var p = JSON.parse(localStorage.getItem(PRICE_CACHE_KEY) || 'null'); if (p && p.quotes) return p; } catch (e) {}
+    return { quotes: {}, fx: null, fileGeneratedAt: null, fetchedAt: null, status: '' };
+  }
+  function savePriceCache() { try { localStorage.setItem(PRICE_CACHE_KEY, JSON.stringify(prices)); } catch (e) {} }
+
+  // Futures quote in USD per contract unit (handles USX = US cents).
+  function quoteUsd(q) { return q.currency === 'USX' ? q.price / 100 : q.price; }
+  // Base CAD price: grain -> CAD/tonne, livestock -> CAD/lb, fuel -> CAD/litre.
+  function baseCad(c) {
+    if (!c || !c.symbol) return null;
+    var q = prices.quotes[c.symbol], fx = prices.fx && prices.fx.USDCAD;
+    if (!q || typeof q.price !== 'number' || !fx) return null;
+    var usd = quoteUsd(q);
+    if (c.kind === 'grain') return usd / (c.futBuLb * LB_KG / 1000) * fx;
+    if (c.kind === 'livestock') return usd * fx;
+    if (c.kind === 'fuel') return usd / US_GAL_L * fx;
+    return null;
+  }
+  // How many base units (tonne / lb / litre) are in one of the item's units, or null if it can't convert.
+  function unitFactor(c, unit, it) {
+    if (c.kind === 'grain') return { tonnes: 1, kg: 0.001, lbs: LB_KG / 1000, cwt: 100 * LB_KG / 1000, bushels: c.buLb * LB_KG / 1000 }[unit] || null;
+    if (c.kind === 'livestock') {
+      if (unit === 'head') return it && it.headWeight > 0 ? it.headWeight : null;
+      return { lbs: 1, kg: 1 / LB_KG, cwt: 100, tonnes: 1000 / LB_KG }[unit] || null;
+    }
+    if (c.kind === 'fuel') return { litres: 1, gallons: IMP_GAL_L }[unit] || null;
+    return null;
+  }
+  function unitWord(u) { return u === 'each' ? 'each' : u === 'head' ? 'head' : u.replace(/s$/, ''); }
+  // Market price per item unit (CAD) from futures, before basis. Returns { price } or { reason }.
+  function marketUnitPrice(it) {
+    var c = commodityById(it.commodity);
+    if (!c) return { reason: 'none' };
+    if (c.kind === 'manual') return { reason: 'manual-only' };
+    var f = unitFactor(c, it.unit, it);
+    if (!f) return { reason: c.kind === 'livestock' && it.unit === 'head' ? 'need-weight' : 'unit' };
+    var b = baseCad(c);
+    if (b == null) return { reason: 'no-price' };
+    return { price: b * f };
+  }
+  // The price used for valuing an item: your price > futures + basis > cost.
+  function valuation(it) {
+    if (it.marketPrice != null) return { unitPrice: it.marketPrice, method: 'manual', label: 'your price' };
+    var m = marketUnitPrice(it);
+    if (m.price != null) {
+      var p = m.price + (it.basis || 0);
+      return { unitPrice: p, futures: m.price, method: 'market', label: 'futures' + (it.basis ? ' ' + (it.basis > 0 ? '+' : '−') + cad.format(Math.abs(it.basis)) + ' basis' : '') };
+    }
+    if (it.cost != null) return { unitPrice: it.cost, method: 'cost', label: 'cost', reason: m.reason };
+    return { unitPrice: null, method: 'none', label: 'no price', reason: m.reason };
+  }
+  function reasonText(r, it) {
+    var c = commodityById(it.commodity);
+    return {
+      'manual-only': 'No free live price for ' + (c ? c.label.replace(/ — enter your price$/, '') : 'this') + ' — enter your price.',
+      'need-weight': 'Set the average weight per head (lb) to use the futures price.',
+      unit: 'Futures price can’t convert to “' + it.unit + '”. Use a weight' + (c && c.kind === 'fuel' ? '/volume (litres, gallons)' : ' unit (bushels, tonnes, lbs, kg)') + ' or enter your price.',
+      'no-price': 'Live price not loaded yet — tap Refresh prices.'
+    }[r] || '';
+  }
+
+  function fetchJSON(url, ms) {
+    var ctl = typeof AbortController === 'function' ? new AbortController() : null;
+    var t = ctl ? setTimeout(function () { ctl.abort(); }, ms || 10000) : null;
+    return fetch(url, { cache: 'no-store', signal: ctl ? ctl.signal : undefined }).then(function (r) {
+      clearTimeout(t); if (!r.ok) throw new Error('HTTP ' + r.status); return r.json();
+    }, function (e) { clearTimeout(t); throw e; });
+  }
+  var refreshing = false;
+  function refreshPrices(userAsked) {
+    if (refreshing) return Promise.resolve();
+    refreshing = true; prices.status = 'loading'; renderPrices();
+    var file = fetchJSON(PRICES_URL + '?t=' + Date.now());
+    var boc = fetchJSON(BOC_URL).then(function (d) {
+      var o = d.observations[d.observations.length - 1], v = Number(o.FXUSDCAD.v);
+      if (!(v > 0)) throw new Error('bad rate');
+      return { USDCAD: v, date: o.d, source: 'Bank of Canada daily average' };
+    });
+    return Promise.allSettled([file, boc]).then(function (r) {
+      var ok = false;
+      if (r[0].status === 'fulfilled' && r[0].value && r[0].value.quotes) {
+        prices.quotes = r[0].value.quotes; prices.fileGeneratedAt = r[0].value.generatedAt || null; prices.source = r[0].value.source || '';
+        if (r[0].value.fx && r[0].value.fx.USDCAD > 0 && !(r[1].status === 'fulfilled')) prices.fx = r[0].value.fx;
+        ok = true;
+      }
+      if (r[1].status === 'fulfilled') prices.fx = r[1].value;
+      if (ok) { prices.fetchedAt = nowIso(); prices.status = 'ok'; }
+      else prices.status = prices.fetchedAt ? 'offline' : 'error';
+      savePriceCache();
+      refreshing = false; render();
+      if (userAsked) toast(ok ? 'Prices updated' : prices.fetchedAt ? 'Couldn’t reach the price feed — showing saved prices' : 'Couldn’t load prices — check your connection');
+    });
+  }
+
+  // older saved data / backups have no barcode or price fields
+  function normalizePriceFields(i) {
+    if (!i) return;
+    if (typeof i.barcode !== 'string') i.barcode = '';
+    i.commodity = commodityById(i.commodity) ? i.commodity : '';
+    i.basis = num(i.basis, null); i.marketPrice = num(i.marketPrice, null); i.headWeight = num(i.headWeight, null);
+    if (i.marketPrice != null && i.marketPrice < 0) i.marketPrice = null;
+    if (i.headWeight != null && i.headWeight <= 0) i.headWeight = null;
   }
 
   // ---------- state ----------
@@ -77,7 +227,7 @@
       if (raw) {
         var parsed = JSON.parse(raw);
         if (parsed && Array.isArray(parsed.items)) {
-          parsed.items.forEach(function (i) { if (i && typeof i.barcode !== 'string') i.barcode = ''; });
+          parsed.items.forEach(normalizePriceFields);
           return parsed;
         }
       }
@@ -116,6 +266,7 @@
   // ---------- rendering ----------
   function render() {
     renderStats();
+    renderPrices();
     renderBreakdown();
     renderFilters();
     renderList();
@@ -129,8 +280,55 @@
     $('#stats').innerHTML =
       '<div class="stat"><div class="label">Items</div><div class="value">' + total + '</div></div>' +
       '<button type="button" class="stat' + (low ? ' alert' : '') + '" id="lowStat" title="Show low stock only"><div class="label">Low stock</div><div class="value">' + low + '</div></button>' +
-      '<div class="stat"><div class="label">Total value</div><div class="value">' + cad.format(value).replace('.00', '') + '</div></div>';
+      '<button type="button" class="stat" id="valueStat" title="See how this is valued"><div class="label">Inventory value</div><div class="value">' + cad.format(value).replace('.00', '') + '</div></button>';
     $('#lowStat').onclick = function () { ui.lowOnly = !ui.lowOnly; $('#lowOnly').checked = ui.lowOnly; renderList(); };
+    $('#valueStat').onclick = function () { $('#valueCard').scrollIntoView({ behavior: 'smooth', block: 'start' }); };
+  }
+
+  function fmtTime(iso) {
+    if (!iso) return '—';
+    var d = new Date(iso); if (isNaN(d)) return iso;
+    return d.toLocaleString('en-CA', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
+  }
+  function renderPrices() {
+    var el = $('#valueCard'); if (!el) return;
+    var t = { market: 0, manual: 0, cost: 0 }, counts = { market: 0, manual: 0, cost: 0, none: 0 };
+    state.items.forEach(function (i) {
+      var v = valuation(i); counts[v.method]++;
+      if (v.unitPrice != null) t[v.method] += i.quantity * v.unitPrice;
+    });
+    var total = t.market + t.manual + t.cost;
+    var fx = prices.fx;
+    var st = prices.status === 'loading' ? 'Updating prices…' :
+      prices.status === 'offline' ? 'Offline — using prices saved ' + relTime(prices.fetchedAt) + '.' :
+      prices.status === 'error' && !prices.fetchedAt ? 'Couldn’t load live prices. Items use your price or cost until they load.' :
+      prices.fetchedAt ? 'Checked ' + relTime(prices.fetchedAt) + '.' : '';
+    var rows = COMMODITIES.filter(function (c) { return c.symbol; }).map(function (c) {
+      var q = prices.quotes[c.symbol], b = baseCad(c);
+      if (!q || b == null) return '<tr><td>' + esc(c.label) + '</td><td colspan="2" class="muted">not loaded</td></tr>';
+      var usd = quoteUsd(q), qtxt, ctxt;
+      if (c.kind === 'grain') { qtxt = 'US$' + usd.toFixed(2) + '/bu'; ctxt = cad.format(b) + '/t · ' + cad.format(b * c.buLb * LB_KG / 1000) + '/bu'; }
+      else if (c.kind === 'livestock') { qtxt = 'US$' + (usd * 100).toFixed(2) + '/cwt'; ctxt = cad.format(b * 100) + '/cwt'; }
+      else { qtxt = 'US$' + usd.toFixed(4) + '/US gal'; ctxt = cad.format(b) + '/L'; }
+      var chg = typeof q.prevClose === 'number' && q.prevClose ? (q.price - q.prevClose) / q.prevClose * 100 : null;
+      return '<tr data-sym="' + esc(c.symbol) + '"><td>' + esc(shortName(c)) + '<div class="muted tiny">' + esc(q.name || c.symbol) + (q.stale ? ' · stale' : '') + '</div></td>' +
+        '<td>' + qtxt + (chg != null ? ' <span class="' + (chg >= 0 ? 'up' : 'down') + '">' + (chg >= 0 ? '▲' : '▼') + Math.abs(chg).toFixed(1) + '%</span>' : '') + '<div class="muted tiny">' + esc(fmtTime(q.time)) + '</div></td>' +
+        '<td class="cadp">' + ctxt + '</td></tr>';
+    }).join('');
+    el.innerHTML =
+      '<div class="vc-head"><h2>Inventory value</h2><button type="button" class="btn small" id="refreshPrices"' + (prices.status === 'loading' ? ' disabled' : '') + '>↻ Refresh prices</button></div>' +
+      '<div class="vc-total" id="vcTotal">' + cad.format(total) + '</div>' +
+      '<div class="vc-split">' +
+        '<div><span class="dot market"></span>Market (futures + basis)<strong id="vcMarket">' + cad.format(t.market) + '</strong><small>' + counts.market + ' items</small></div>' +
+        '<div><span class="dot manual"></span>Your prices<strong id="vcManual">' + cad.format(t.manual) + '</strong><small>' + counts.manual + ' items</small></div>' +
+        '<div><span class="dot cost"></span>At cost<strong id="vcCost">' + cad.format(t.cost) + '</strong><small>' + counts.cost + ' items</small></div>' +
+      '</div>' +
+      (counts.none ? '<p class="muted small">' + counts.none + ' item' + (counts.none > 1 ? 's have' : ' has') + ' no price or cost and ' + (counts.none > 1 ? 'aren’t' : 'isn’t') + ' counted.</p>' : '') +
+      '<p class="muted small" id="priceStatus">' + esc(st) + (prices.fileGeneratedAt ? ' Futures as of ' + esc(fmtTime(prices.fileGeneratedAt)) + '.' : '') +
+        (fx ? ' US$1 = C$' + fx.USDCAD.toFixed(4) + ' (' + esc(fx.source || 'Bank of Canada') + ', ' + esc(fx.date || '') + ').' : '') + '</p>' +
+      '<details class="quotes"><summary>Live futures prices (CAD)</summary><table><thead><tr><th>Commodity</th><th>Futures quote</th><th>In CAD</th></tr></thead><tbody>' + rows + '</tbody></table>' +
+      '<p class="muted tiny">Futures reference prices from Yahoo Finance (CBOT/CME, delayed and front-month), converted to CAD at the Bank of Canada rate. They are <strong>not your local cash price</strong> — add a basis on each item to match your elevator or auction, or set your own price. Canola, CWRS, durum, barley, peas, lentils, flax and other crops have no free live feed here, so enter your price for those.</p></details>';
+    $('#refreshPrices').onclick = function () { refreshPrices(true); };
   }
 
   function renderBreakdown() {
@@ -186,6 +384,19 @@
     return items;
   }
 
+  function priceMeta(i) {
+    var v = valuation(i), c = commodityById(i.commodity), u = esc(unitWord(i.unit));
+    var html = '';
+    if (v.unitPrice != null) {
+      html = '<span class="pricebox ' + v.method + '">' + (v.method === 'market' ? '📈 ' : '') + cad.format(v.unitPrice) + '/' + u +
+        ' <em>(' + esc(v.label) + ')</em> · <strong class="item-value">' + cad.format(itemValue(i)) + '</strong></span>';
+    } else html = '<span>No price or cost set</span>';
+    if (c) html += '<span class="tag commodity" title="' + esc(c.label) + '">' + esc(shortName(c)) + (v.method === 'market' ? ' · futures ref' : '') + '</span>';
+    if (c && v.method !== 'market' && v.method !== 'manual' && v.reason) html += '<span class="muted price-note">' + esc(reasonText(v.reason, i)) + '</span>';
+    if (v.method !== 'cost' && i.cost != null) html += '<span class="muted">Cost ' + cad.format(i.cost) + '/' + u + '</span>';
+    return html;
+  }
+
   function renderList() {
     var items = visibleItems();
     if (!items.length) {
@@ -205,7 +416,7 @@
           '<div class="steppers"><button class="step" data-act="dec" aria-label="Decrease ' + esc(i.name) + ' by 1">−</button><button class="step" data-act="inc" aria-label="Increase ' + esc(i.name) + ' by 1">+</button></div></div>' +
         '<div class="meta">' +
           '<span>Alert at: ' + (i.threshold > 0 ? numFmt.format(i.threshold) + ' ' + esc(i.unit) : 'off') + '</span>' +
-          '<span>' + (i.cost != null ? cad.format(i.cost) + '/' + esc(i.unit.replace(/s$/, '')) + ' · ' + cad.format(itemValue(i)) : 'No cost set') + '</span>' +
+          priceMeta(i) +
           '<span>' + (i.supplier ? 'Supplier: ' + esc(i.supplier) : '') + '</span>' +
           (i.barcode ? '<span class="barcode" data-barcode="' + esc(i.barcode) + '">▥ ' + esc(i.barcode) + '</span>' : '') +
           '<span title="' + esc(new Date(i.updatedAt).toLocaleString('en-CA')) + '">Updated ' + relTime(i.updatedAt) + '</span>' +
@@ -238,6 +449,10 @@
     $('#formError').hidden = true;
     $('#fCategory').innerHTML = CATEGORIES.map(function (c) { return '<option>' + esc(c) + '</option>'; }).join('');
     $('#fUnit').innerHTML = UNITS.map(function (u) { return '<option>' + u + '</option>'; }).join('');
+    var live = COMMODITIES.filter(function (c) { return c.symbol; }), man = COMMODITIES.filter(function (c) { return !c.symbol; });
+    var opt = function (c) { return '<option value="' + c.id + '">' + esc(c.label) + '</option>'; };
+    $('#fCommodity').innerHTML = '<option value="">Not linked</option><optgroup label="Live futures price">' + live.map(opt).join('') +
+      '</optgroup><optgroup label="No live feed — enter your price">' + man.map(opt).join('') + '</optgroup>';
     var it = id ? findItem(id) : null;
     $('#itemDialogTitle').textContent = it ? 'Edit item' : 'Add item';
     if (it) {
@@ -245,13 +460,41 @@
       f.quantity.value = it.quantity; f.unit.value = it.unit; f.threshold.value = it.threshold || 0;
       f.cost.value = it.cost != null ? it.cost : ''; f.supplier.value = it.supplier || ''; f.notes.value = it.notes || '';
       f.barcode.value = it.barcode || '';
+      f.commodity.value = it.commodity || ''; f.basis.value = it.basis != null ? it.basis : '';
+      f.marketPrice.value = it.marketPrice != null ? it.marketPrice : ''; f.headWeight.value = it.headWeight != null ? it.headWeight : '';
     } else if (ui.category) {
       f.category.value = ui.category;
     }
     if (!it && prefill && prefill.barcode) f.barcode.value = prefill.barcode;
+    updatePricePreview();
     openDialog($('#itemDialog'));
     setTimeout(function () { f.name.focus(); }, 30);
   }
+
+  // live preview of the futures price for the item being edited
+  function updatePricePreview() {
+    var f = $('#itemForm'), c = commodityById(f.commodity.value);
+    var tmp = { commodity: f.commodity.value, unit: f.unit.value, headWeight: num(f.headWeight.value, null), basis: num(f.basis.value, null), marketPrice: num(f.marketPrice.value, null), cost: num(f.cost.value, null), quantity: Math.max(0, num(f.quantity.value, 0)) };
+    var u = unitWord(tmp.unit);
+    $('#priceFields').hidden = !c;
+    $('#headWeightWrap').hidden = !(c && c.kind === 'livestock' && tmp.unit === 'head');
+    $('#basisWrap').hidden = !(c && c.symbol);
+    $('#basisLabel').textContent = 'Basis (+/− CAD per ' + u + ')';
+    $('#marketPriceLabel').textContent = 'Your price (CAD per ' + u + ')' + (c && c.symbol ? ' — overrides futures' : '');
+    var out = '';
+    if (c) {
+      var m = marketUnitPrice(tmp);
+      if (c.hint) out += esc(c.hint) + ' ';
+      if (m.price != null) out += 'Futures now ≈ <strong>' + cad.format(m.price) + '/' + esc(u) + '</strong>' + (tmp.basis ? ' → ' + cad.format(m.price + tmp.basis) + ' with basis' : '') + '. ';
+      else out += esc(reasonText(m.reason, tmp)) + ' ';
+      var v = valuation(tmp);
+      if (v.unitPrice != null) out += 'Value: ' + cad.format(tmp.quantity * v.unitPrice) + ' (' + esc(v.label) + ').';
+    }
+    $('#pricePreview').innerHTML = out;
+  }
+  ['commodity', 'unit', 'headWeight', 'basis', 'marketPrice', 'cost', 'quantity'].forEach(function (n) {
+    var el = $('#itemForm').elements[n]; el.addEventListener('input', updatePricePreview); el.addEventListener('change', updatePricePreview);
+  });
 
   $('#itemForm').addEventListener('submit', function (e) {
     e.preventDefault();
@@ -266,9 +509,11 @@
     var data = {
       name: name, category: f.category.value, location: f.location.value.trim(), unit: f.unit.value,
       threshold: Math.max(0, num(f.threshold.value, 0)), cost: num(f.cost.value, null),
-      supplier: f.supplier.value.trim(), notes: f.notes.value.trim(), barcode: barcode
+      supplier: f.supplier.value.trim(), notes: f.notes.value.trim(), barcode: barcode,
+      commodity: f.commodity.value, basis: num(f.basis.value, null), marketPrice: num(f.marketPrice.value, null), headWeight: num(f.headWeight.value, null)
     };
     if (data.cost != null && data.cost < 0) data.cost = null;
+    normalizePriceFields(data);
     if (editingId) {
       var it = findItem(editingId);
       var diff = round(qty - it.quantity);
@@ -424,15 +669,19 @@
     return /[",\n\r]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
   }
   function toCSV() {
-    var head = ['Name', 'Category', 'Quantity', 'Unit', 'Location', 'Low-stock threshold', 'Low stock?', 'Cost per unit (CAD)', 'Total value (CAD)', 'Supplier', 'Notes', 'Barcode', 'Last updated', 'Example data'];
+    var head = ['Name', 'Category', 'Quantity', 'Unit', 'Location', 'Low-stock threshold', 'Low stock?', 'Cost per unit (CAD)', 'Commodity', 'Basis (CAD/unit)', 'Your price (CAD/unit)', 'Avg weight per head (lb)', 'Futures price (CAD/unit)', 'Price used (CAD/unit)', 'Price source', 'Total value (CAD)', 'Supplier', 'Notes', 'Barcode', 'Last updated', 'Example data'];
     var rows = state.items.map(function (i) {
-      return [i.name, i.category, i.quantity, i.unit, i.location, i.threshold, isLow(i) ? 'yes' : 'no', i.cost != null ? i.cost : '', i.cost != null ? itemValue(i).toFixed(2) : '', i.supplier, i.notes, i.barcode || '', i.updatedAt, i.example ? 'yes' : 'no'];
+      var v = valuation(i), m = marketUnitPrice(i), c = commodityById(i.commodity);
+      return [i.name, i.category, i.quantity, i.unit, i.location, i.threshold, isLow(i) ? 'yes' : 'no', i.cost != null ? i.cost : '',
+        c ? c.label : '', i.basis != null ? i.basis : '', i.marketPrice != null ? i.marketPrice : '', i.headWeight != null ? i.headWeight : '',
+        m.price != null ? m.price.toFixed(4) : '', v.unitPrice != null ? v.unitPrice.toFixed(4) : '', v.label, v.unitPrice != null ? itemValue(i).toFixed(2) : '',
+        i.supplier, i.notes, i.barcode || '', i.updatedAt, i.example ? 'yes' : 'no'];
     });
     return [head].concat(rows).map(function (r) { return r.map(csvCell).join(','); }).join('\r\n');
   }
   function exportCSV() { download('farm-inventory-' + todayStr() + '.csv', '\ufeff' + toCSV(), 'text/csv;charset=utf-8'); toast('CSV exported'); }
   function exportJSON() {
-    var payload = { app: 'farm-inventory', version: 1, exportedAt: nowIso(), items: state.items };
+    var payload = { app: 'farm-inventory', version: 1, exportedAt: nowIso(), items: state.items, prices: { fetchedAt: prices.fetchedAt, fileGeneratedAt: prices.fileGeneratedAt, fx: prices.fx, quotes: prices.quotes } };
     download('farm-inventory-backup-' + todayStr() + '.json', JSON.stringify(payload, null, 2), 'application/json');
     toast('Backup saved');
   }
@@ -440,18 +689,21 @@
   function sanitizeItem(r) {
     if (!r || typeof r !== 'object' || !String(r.name || '').trim()) return null;
     var at = r.updatedAt && !isNaN(new Date(r.updatedAt)) ? r.updatedAt : nowIso();
-    return {
+    var out = {
       id: String(r.id || uid()), name: String(r.name).trim().slice(0, 120),
       category: CATEGORIES.indexOf(r.category) >= 0 ? r.category : 'Other',
       quantity: Math.max(0, num(r.quantity, 0)), unit: UNITS.indexOf(r.unit) >= 0 ? r.unit : 'each',
       location: String(r.location || ''), threshold: Math.max(0, num(r.threshold, 0)),
       cost: num(r.cost, null), supplier: String(r.supplier || ''), notes: String(r.notes || ''),
       barcode: cleanCode(r.barcode),
+      commodity: r.commodity, basis: r.basis, marketPrice: r.marketPrice, headWeight: r.headWeight,
       createdAt: r.createdAt || at, updatedAt: at, example: !!r.example,
       history: Array.isArray(r.history) ? r.history.filter(function (h) { return h && typeof h === 'object'; }).map(function (h) {
         return { id: String(h.id || uid()), date: String(h.date || at.slice(0, 10)), at: h.at || at, type: String(h.type || 'adjust'), change: num(h.change, 0), qtyAfter: num(h.qtyAfter, 0), note: String(h.note || '') };
       }) : []
     };
+    normalizePriceFields(out);
+    return out;
   }
   function importData(text) {
     var data;
@@ -695,8 +947,12 @@
   $('#formScanBtn').addEventListener('click', function () { openScanner('fill'); });
 
   // expose a tiny API for testing/debugging
-  window.FarmInventory = { state: function () { return state; }, toCSV: toCSV, importData: importData, isLow: isLow, handleScan: handleScan, findByBarcode: findByBarcode };
+  window.FarmInventory = { state: function () { return state; }, toCSV: toCSV, importData: importData, isLow: isLow, handleScan: handleScan, findByBarcode: findByBarcode,
+    prices: function () { return prices; }, valuation: valuation, refreshPrices: refreshPrices, COMMODITIES: COMMODITIES };
 
   save();
   render();
+  // refresh on open if the saved prices are older than 20 minutes (or missing); works offline from the cache
+  if (!prices.fetchedAt || Date.now() - new Date(prices.fetchedAt).getTime() > 20 * 60000 || !prices.fx) refreshPrices(false);
+  window.addEventListener('online', function () { refreshPrices(false); });
 })();

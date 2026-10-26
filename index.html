@@ -35,6 +35,8 @@
 
   <section class="stats" id="stats" aria-label="Summary"></section>
 
+  <section class="card value-card" id="valueCard" aria-label="Inventory value"></section>
+
   <section class="card breakdown" aria-label="By category">
     <h2>By category</h2>
     <div id="breakdown"></div>
@@ -67,6 +69,17 @@
       <label>Unit<select name="unit" id="fUnit"></select></label>
       <label>Low-stock alert at<input name="threshold" type="number" step="any" min="0" inputmode="decimal" value="0"></label>
       <label>Cost per unit (CAD)<input name="cost" type="number" step="0.01" min="0" inputmode="decimal" placeholder="optional"></label>
+      <label class="full">Market price link
+        <select name="commodity" id="fCommodity"></select>
+      </label>
+      <div class="full price-fields" id="priceFields" hidden>
+        <div class="grid">
+          <label id="basisWrap"><span id="basisLabel">Basis (+/− CAD per unit)</span><input name="basis" type="number" step="any" inputmode="decimal" placeholder="e.g. -1.20"></label>
+          <label id="headWeightWrap" hidden>Avg weight per head (lb)<input name="headWeight" type="number" step="any" min="0" inputmode="decimal" placeholder="e.g. 850"></label>
+          <label><span id="marketPriceLabel">Your price (CAD per unit)</span><input name="marketPrice" type="number" step="any" min="0" inputmode="decimal" placeholder="optional"></label>
+        </div>
+        <p class="price-preview" id="pricePreview" aria-live="polite"></p>
+      </div>
       <label class="full">Barcode
         <span class="input-with-btn"><input name="barcode" id="fBarcode" maxlength="64" autocomplete="off" placeholder="optional — scan or type"><button type="button" class="btn small" id="formScanBtn" aria-label="Scan barcode into this field">📷 Scan</button></span>
       </label>

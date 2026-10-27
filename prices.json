@@ -1,44 +1,44 @@
 {
-  "generatedAt": "2026-10-27T06:55:53.519Z",
+  "generatedAt": "2026-10-27T07:55:25.552Z",
   "source": "Yahoo Finance (CBOT/CME/NYMEX futures, delayed ~10-20 min) + TradingView (MIAX spring wheat, delayed ~10 min) + Bank of Canada USD/CAD",
   "quotes": {
     "ZC=F": {
-      "price": 453.25,
+      "price": 453.5,
       "prevClose": 455,
       "currency": "USX",
-      "time": "2026-10-27T06:44:45.000Z",
+      "time": "2026-10-27T07:43:56.000Z",
       "name": "Corn Futures,Dec-2026",
       "exchange": "CBOT"
     },
     "ZS=F": {
-      "price": 1252.75,
+      "price": 1254,
       "prevClose": 1252.5,
       "currency": "USX",
-      "time": "2026-10-27T06:45:46.000Z",
+      "time": "2026-10-27T07:45:05.000Z",
       "name": "Soybean Futures,Nov-2026",
       "exchange": "CBOT"
     },
     "ZW=F": {
-      "price": 613.75,
+      "price": 614,
       "prevClose": 616,
       "currency": "USX",
-      "time": "2026-10-27T06:45:48.000Z",
+      "time": "2026-10-27T07:45:03.000Z",
       "name": "Chicago SRW Wheat Futures,Dec-2",
       "exchange": "CBOT"
     },
     "KE=F": {
-      "price": 656.25,
+      "price": 656,
       "prevClose": 659,
       "currency": "USX",
-      "time": "2026-10-27T06:45:42.000Z",
+      "time": "2026-10-27T07:41:03.000Z",
       "name": "KC HRW Wheat Futures,Dec-2026",
       "exchange": "CBOT"
     },
     "ZO=F": {
-      "price": 361.25,
+      "price": 361,
       "prevClose": 360.5,
       "currency": "USX",
-      "time": "2026-10-27T06:42:26.000Z",
+      "time": "2026-10-27T07:36:56.000Z",
       "name": "Oat Futures,Dec-2026",
       "exchange": "CBOT"
     },
@@ -51,8 +51,8 @@
       "exchange": "CME"
     },
     "GF=F": {
-      "price": 345.925,
-      "prevClose": 346,
+      "price": 348.6,
+      "prevClose": 348.55,
       "currency": "USX",
       "time": "2026-10-26T18:04:58.000Z",
       "name": "Feeder Cattle Futures,Jan-2027",
@@ -67,10 +67,10 @@
       "exchange": "CME"
     },
     "HO=F": {
-      "price": 4.7329,
+      "price": 4.7779,
       "prevClose": 4.7351,
       "currency": "USD",
-      "time": "2026-10-27T06:45:31.000Z",
+      "time": "2026-10-27T07:44:44.000Z",
       "name": "Heating Oil Dec 26",
       "exchange": "NY Mercantile"
     },

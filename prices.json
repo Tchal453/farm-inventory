@@ -1,44 +1,44 @@
 {
-  "generatedAt": "2026-10-30T01:11:15.592Z",
+  "generatedAt": "2026-10-30T02:06:13.675Z",
   "source": "Yahoo Finance (CBOT/CME/NYMEX futures, delayed ~10-20 min) + TradingView (MIAX spring wheat, delayed ~10 min) + Bank of Canada USD/CAD",
   "quotes": {
     "ZC=F": {
-      "price": 451,
+      "price": 450.75,
       "prevClose": 451.25,
       "currency": "USX",
-      "time": "2026-10-30T01:00:40.000Z",
+      "time": "2026-10-30T01:56:03.000Z",
       "name": "Corn Futures,Dec-2026",
       "exchange": "CBOT"
     },
     "ZS=F": {
-      "price": 1235.75,
+      "price": 1237,
       "prevClose": 1234.75,
       "currency": "USX",
-      "time": "2026-10-30T01:01:11.000Z",
+      "time": "2026-10-30T01:55:05.000Z",
       "name": "Soybean Futures,Nov-2026",
       "exchange": "CBOT"
     },
     "ZW=F": {
-      "price": 607.25,
+      "price": 607.75,
       "prevClose": 603.75,
       "currency": "USX",
-      "time": "2026-10-30T01:00:32.000Z",
+      "time": "2026-10-30T01:55:25.000Z",
       "name": "Chicago SRW Wheat Futures,Dec-2",
       "exchange": "CBOT"
     },
     "KE=F": {
-      "price": 648.25,
+      "price": 647.75,
       "prevClose": 645.25,
       "currency": "USX",
-      "time": "2026-10-30T01:00:32.000Z",
+      "time": "2026-10-30T01:55:50.000Z",
       "name": "KC HRW Wheat Futures,Dec-2026",
       "exchange": "CBOT"
     },
     "ZO=F": {
-      "price": 344.5,
+      "price": 344.75,
       "prevClose": 343,
       "currency": "USX",
-      "time": "2026-10-30T00:51:41.000Z",
+      "time": "2026-10-30T01:42:54.000Z",
       "name": "Oat Futures,Dec-2026",
       "exchange": "CBOT"
     },
@@ -67,18 +67,18 @@
       "exchange": "CME"
     },
     "HO=F": {
-      "price": 4.579,
+      "price": 4.671,
       "prevClose": 4.5875,
       "currency": "USD",
-      "time": "2026-10-30T01:00:28.000Z",
+      "time": "2026-10-30T01:56:10.000Z",
       "name": "Heating Oil Dec 26",
       "exchange": "NY Mercantile"
     },
     "MIAX:MWE1!": {
-      "price": 6.295,
+      "price": 6.2925,
       "prevClose": 6.245,
       "currency": "USD",
-      "time": "2026-10-30T01:10:49.000Z",
+      "time": "2026-10-30T02:05:49.000Z",
       "name": "Hard Red Spring Wheat (MW) Futures, front month",
       "exchange": "MIAX"
     }

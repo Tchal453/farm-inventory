@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-31T04:53:57.252Z",
+  "generatedAt": "2026-11-01T18:54:03.568Z",
   "source": "Yahoo Finance (CBOT/CME/NYMEX futures, delayed ~10-20 min) + TradingView (MIAX spring wheat, delayed ~10 min) + Bank of Canada USD/CAD",
   "quotes": {
     "ZC=F": {
@@ -15,7 +15,7 @@
       "prevClose": 1234.75,
       "currency": "USX",
       "time": "2026-10-30T18:19:59.000Z",
-      "name": "Soybean Futures,Nov-2026",
+      "name": "Soybean Futures,Jan-2027",
       "exchange": "CBOT"
     },
     "ZW=F": {

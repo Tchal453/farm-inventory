@@ -1,9 +1,9 @@
 {
-  "generatedAt": "2026-11-06T22:51:56.517Z",
+  "generatedAt": "2026-11-07T05:56:10.904Z",
   "source": "Yahoo Finance (CBOT/CME/NYMEX futures, delayed ~10-20 min) + TradingView (MIAX spring wheat, delayed ~10 min) + Bank of Canada USD/CAD",
   "quotes": {
     "ZC=F": {
-      "price": 442.25,
+      "price": 441.5,
       "prevClose": 440,
       "currency": "USX",
       "time": "2026-11-06T19:19:56.000Z",
@@ -11,7 +11,7 @@
       "exchange": "CBOT"
     },
     "ZS=F": {
-      "price": 1194.5,
+      "price": 1193.75,
       "prevClose": 1188.25,
       "currency": "USX",
       "time": "2026-11-06T19:19:59.000Z",
@@ -19,7 +19,7 @@
       "exchange": "CBOT"
     },
     "ZW=F": {
-      "price": 590.5,
+      "price": 591.25,
       "prevClose": 599.25,
       "currency": "USX",
       "time": "2026-11-06T19:19:59.000Z",
@@ -27,7 +27,7 @@
       "exchange": "CBOT"
     },
     "KE=F": {
-      "price": 631.75,
+      "price": 632.5,
       "prevClose": 635.75,
       "currency": "USX",
       "time": "2026-11-06T19:19:58.000Z",
@@ -35,7 +35,7 @@
       "exchange": "CBOT"
     },
     "ZO=F": {
-      "price": 334.25,
+      "price": 334,
       "prevClose": 332.75,
       "currency": "USX",
       "time": "2026-11-06T19:19:55.000Z",
@@ -43,7 +43,7 @@
       "exchange": "CBOT"
     },
     "LE=F": {
-      "price": 214.175,
+      "price": 214.05,
       "prevClose": 214.4,
       "currency": "USX",
       "time": "2026-11-06T19:04:56.000Z",
@@ -51,7 +51,7 @@
       "exchange": "CME"
     },
     "GF=F": {
-      "price": 318.7,
+      "price": 318.375,
       "prevClose": 320.325,
       "currency": "USX",
       "time": "2026-11-06T19:04:58.000Z",
@@ -59,7 +59,7 @@
       "exchange": "CME"
     },
     "HE=F": {
-      "price": 53.375,
+      "price": 53.525,
       "prevClose": 55.1,
       "currency": "USX",
       "time": "2026-11-06T19:04:58.000Z",
@@ -67,7 +67,7 @@
       "exchange": "CME"
     },
     "HO=F": {
-      "price": 4.343,
+      "price": 4.3317,
       "prevClose": 4.3519,
       "currency": "USD",
       "time": "2026-11-06T21:59:44.000Z",

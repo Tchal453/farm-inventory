@@ -1,10 +1,10 @@
 {
-  "generatedAt": "2026-11-10T21:51:04.113Z",
+  "generatedAt": "2026-11-10T22:52:50.787Z",
   "source": "Yahoo Finance (CBOT/CME/NYMEX futures, delayed ~10-20 min) + TradingView (MIAX spring wheat, delayed ~10 min) + Bank of Canada USD/CAD",
   "quotes": {
     "ZC=F": {
       "price": 448,
-      "prevClose": 439.25,
+      "prevClose": 449,
       "currency": "USX",
       "time": "2026-11-10T19:19:59.000Z",
       "name": "Corn Futures,Dec-2026",
@@ -12,7 +12,7 @@
     },
     "ZS=F": {
       "price": 1226.75,
-      "prevClose": 1188.25,
+      "prevClose": 1228,
       "currency": "USX",
       "time": "2026-11-10T19:19:59.000Z",
       "name": "Soybean Futures,Jan-2027",
@@ -20,7 +20,7 @@
     },
     "ZW=F": {
       "price": 591.5,
-      "prevClose": 588,
+      "prevClose": 592.75,
       "currency": "USX",
       "time": "2026-11-10T19:19:56.000Z",
       "name": "Chicago SRW Wheat Futures,Dec-2",
@@ -28,7 +28,7 @@
     },
     "KE=F": {
       "price": 633.5,
-      "prevClose": 632.5,
+      "prevClose": 634.25,
       "currency": "USX",
       "time": "2026-11-10T19:19:56.000Z",
       "name": "KC HRW Wheat Futures,Dec-2026",
@@ -36,7 +36,7 @@
     },
     "ZO=F": {
       "price": 344.75,
-      "prevClose": 334,
+      "prevClose": 345,
       "currency": "USX",
       "time": "2026-11-10T19:17:47.000Z",
       "name": "Oat Futures,Mar-2027",
@@ -44,7 +44,7 @@
     },
     "LE=F": {
       "price": 222.55,
-      "prevClose": 220.1,
+      "prevClose": 222.575,
       "currency": "USX",
       "time": "2026-11-10T19:04:55.000Z",
       "name": "Live Cattle Futures,Dec-2026",
@@ -52,7 +52,7 @@
     },
     "GF=F": {
       "price": 326.675,
-      "prevClose": 324.175,
+      "prevClose": 326.675,
       "currency": "USX",
       "time": "2026-11-10T19:04:47.000Z",
       "name": "Feeder Cattle Futures,Jan-2027",
@@ -60,17 +60,17 @@
     },
     "HE=F": {
       "price": 55.875,
-      "prevClose": 55.875,
+      "prevClose": 55.8,
       "currency": "USX",
       "time": "2026-11-10T19:04:57.000Z",
       "name": "Lean Hog Futures,Dec-2026",
       "exchange": "CME"
     },
     "HO=F": {
-      "price": 4.1537,
-      "prevClose": 4.2148,
+      "price": 4.1533,
+      "prevClose": 4.1309,
       "currency": "USD",
-      "time": "2026-11-10T21:40:38.000Z",
+      "time": "2026-11-10T21:59:30.000Z",
       "name": "Heating Oil Dec 26",
       "exchange": "NY Mercantile"
     },

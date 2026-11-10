@@ -1,36 +1,36 @@
 {
-  "generatedAt": "2026-11-10T10:03:43.477Z",
+  "generatedAt": "2026-11-10T10:59:54.143Z",
   "source": "Yahoo Finance (CBOT/CME/NYMEX futures, delayed ~10-20 min) + TradingView (MIAX spring wheat, delayed ~10 min) + Bank of Canada USD/CAD",
   "quotes": {
     "ZC=F": {
-      "price": 441.5,
+      "price": 442.25,
       "prevClose": 439.25,
       "currency": "USX",
-      "time": "2026-11-10T09:52:53.000Z",
+      "time": "2026-11-10T10:49:25.000Z",
       "name": "Corn Futures,Dec-2026",
       "exchange": "CBOT"
     },
     "ZS=F": {
-      "price": 1195.75,
+      "price": 1196.25,
       "prevClose": 1188.25,
       "currency": "USX",
-      "time": "2026-11-10T09:53:14.000Z",
+      "time": "2026-11-10T10:49:25.000Z",
       "name": "Soybean Futures,Jan-2027",
       "exchange": "CBOT"
     },
     "ZW=F": {
-      "price": 589.25,
+      "price": 590.25,
       "prevClose": 588,
       "currency": "USX",
-      "time": "2026-11-10T09:53:36.000Z",
+      "time": "2026-11-10T10:49:25.000Z",
       "name": "Chicago SRW Wheat Futures,Dec-2",
       "exchange": "CBOT"
     },
     "KE=F": {
-      "price": 642.75,
-      "prevClose": 639.25,
+      "price": 637.5,
+      "prevClose": 632.5,
       "currency": "USX",
-      "time": "2026-11-10T09:52:15.000Z",
+      "time": "2026-11-10T10:46:13.000Z",
       "name": "KC HRW Wheat Futures,Dec-2026",
       "exchange": "CBOT"
     },
@@ -67,18 +67,18 @@
       "exchange": "CME"
     },
     "HO=F": {
-      "price": 4.041,
+      "price": 4.05,
       "prevClose": 4.2148,
       "currency": "USD",
-      "time": "2026-11-10T09:53:35.000Z",
+      "time": "2026-11-10T10:49:20.000Z",
       "name": "Heating Oil Dec 26",
       "exchange": "NY Mercantile"
     },
     "MIAX:MWE1!": {
-      "price": 6.195,
+      "price": 6.205,
       "prevClose": 6.2225,
       "currency": "USD",
-      "time": "2026-11-10T09:39:39.000Z",
+      "time": "2026-11-10T10:04:58.000Z",
       "name": "Hard Red Spring Wheat (MW) Futures, front month",
       "exchange": "MIAX"
     }

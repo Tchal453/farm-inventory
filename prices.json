@@ -1,36 +1,36 @@
 {
-  "generatedAt": "2026-11-11T04:06:09.172Z",
+  "generatedAt": "2026-11-11T05:11:11.399Z",
   "source": "Yahoo Finance (CBOT/CME/NYMEX futures, delayed ~10-20 min) + TradingView (MIAX spring wheat, delayed ~10 min) + Bank of Canada USD/CAD",
   "quotes": {
     "ZC=F": {
-      "price": 448.25,
+      "price": 448.5,
       "prevClose": 449,
       "currency": "USX",
-      "time": "2026-11-11T03:55:45.000Z",
+      "time": "2026-11-11T05:00:32.000Z",
       "name": "Corn Futures,Dec-2026",
       "exchange": "CBOT"
     },
     "ZS=F": {
-      "price": 1225,
+      "price": 1224,
       "prevClose": 1228,
       "currency": "USX",
-      "time": "2026-11-11T03:55:44.000Z",
+      "time": "2026-11-11T05:01:02.000Z",
       "name": "Soybean Futures,Jan-2027",
       "exchange": "CBOT"
     },
     "ZW=F": {
-      "price": 594.25,
+      "price": 594,
       "prevClose": 592.75,
       "currency": "USX",
-      "time": "2026-11-11T03:55:47.000Z",
+      "time": "2026-11-11T05:00:53.000Z",
       "name": "Chicago SRW Wheat Futures,Dec-2",
       "exchange": "CBOT"
     },
     "KE=F": {
-      "price": 633.75,
+      "price": 633.5,
       "prevClose": 634.25,
       "currency": "USX",
-      "time": "2026-11-11T03:54:33.000Z",
+      "time": "2026-11-11T04:58:41.000Z",
       "name": "KC HRW Wheat Futures,Dec-2026",
       "exchange": "CBOT"
     },
@@ -67,10 +67,10 @@
       "exchange": "CME"
     },
     "HO=F": {
-      "price": 4.1623,
+      "price": 4.1604,
       "prevClose": 4.1309,
       "currency": "USD",
-      "time": "2026-11-11T03:54:32.000Z",
+      "time": "2026-11-11T05:00:54.000Z",
       "name": "Heating Oil Dec 26",
       "exchange": "NY Mercantile"
     },

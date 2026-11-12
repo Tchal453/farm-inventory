@@ -1,12 +1,12 @@
 {
-  "generatedAt": "2026-11-12T16:13:57.292Z",
+  "generatedAt": "2026-11-12T17:15:48.429Z",
   "source": "Yahoo Finance (CBOT/CME/NYMEX futures, delayed ~10-20 min) + TradingView (MIAX spring wheat, delayed ~10 min) + Bank of Canada USD/CAD",
   "quotes": {
     "ZC=F": {
-      "price": 445.5,
+      "price": 443,
       "prevClose": 448,
       "currency": "USX",
-      "time": "2026-11-12T16:03:55.000Z",
+      "time": "2026-11-12T17:05:46.000Z",
       "name": "Corn Futures,Dec-2026",
       "exchange": "CBOT"
     },
@@ -14,71 +14,71 @@
       "price": 1220,
       "prevClose": 1230.75,
       "currency": "USX",
-      "time": "2026-11-12T16:03:55.000Z",
+      "time": "2026-11-12T17:05:45.000Z",
       "name": "Soybean Futures,Jan-2027",
       "exchange": "CBOT"
     },
     "ZW=F": {
-      "price": 591,
+      "price": 590.5,
       "prevClose": 599.5,
       "currency": "USX",
-      "time": "2026-11-12T16:03:55.000Z",
+      "time": "2026-11-12T17:05:47.000Z",
       "name": "Chicago SRW Wheat Futures,Dec-2",
       "exchange": "CBOT"
     },
     "KE=F": {
-      "price": 629,
-      "prevClose": 639.5,
+      "price": 636.75,
+      "prevClose": 649.5,
       "currency": "USX",
-      "time": "2026-11-12T16:03:55.000Z",
+      "time": "2026-11-12T17:05:29.000Z",
       "name": "KC HRW Wheat Futures,Dec-2026",
       "exchange": "CBOT"
     },
     "ZO=F": {
-      "price": 346,
+      "price": 344.75,
       "prevClose": 350.75,
       "currency": "USX",
-      "time": "2026-11-12T16:01:32.000Z",
+      "time": "2026-11-12T16:57:51.000Z",
       "name": "Oat Futures,Mar-2027",
       "exchange": "CBOT"
     },
     "LE=F": {
-      "price": 220.175,
-      "prevClose": 218.975,
+      "price": 223.3,
+      "prevClose": 222.7,
       "currency": "USX",
-      "time": "2026-11-12T16:03:42.000Z",
+      "time": "2026-11-12T17:05:30.000Z",
       "name": "Live Cattle Futures,Dec-2026",
       "exchange": "CME"
     },
     "GF=F": {
-      "price": 336.5,
-      "prevClose": 332.625,
+      "price": 332.3,
+      "prevClose": 327.8,
       "currency": "USX",
-      "time": "2026-11-12T16:03:55.000Z",
+      "time": "2026-11-12T17:05:46.000Z",
       "name": "Feeder Cattle Futures,Jan-2027",
       "exchange": "CME"
     },
     "HE=F": {
-      "price": 55.175,
+      "price": 55.375,
       "prevClose": 56.025,
       "currency": "USX",
-      "time": "2026-11-12T16:03:53.000Z",
+      "time": "2026-11-12T17:05:44.000Z",
       "name": "Lean Hog Futures,Dec-2026",
       "exchange": "CME"
     },
     "HO=F": {
-      "price": 4.1992,
+      "price": 4.199,
       "prevClose": 4.2113,
       "currency": "USD",
-      "time": "2026-11-12T16:03:44.000Z",
+      "time": "2026-11-12T17:05:45.000Z",
       "name": "Heating Oil Dec 26",
       "exchange": "NY Mercantile"
     },
     "MIAX:MWE1!": {
-      "price": 6.2875,
+      "price": 6.2625,
       "prevClose": 6.355,
       "currency": "USD",
-      "time": "2026-11-12T16:13:43.000Z",
+      "time": "2026-11-12T17:15:16.000Z",
       "name": "Hard Red Spring Wheat (MW) Futures, front month",
       "exchange": "MIAX"
     }

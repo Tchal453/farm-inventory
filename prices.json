@@ -1,36 +1,36 @@
 {
-  "generatedAt": "2026-11-12T23:53:33.975Z",
+  "generatedAt": "2026-11-13T01:21:31.559Z",
   "source": "Yahoo Finance (CBOT/CME/NYMEX futures, delayed ~10-20 min) + TradingView (MIAX spring wheat, delayed ~10 min) + Bank of Canada USD/CAD",
   "quotes": {
     "ZC=F": {
-      "price": 442.25,
+      "price": 443.75,
       "prevClose": 442.5,
       "currency": "USX",
-      "time": "2026-11-12T19:19:59.000Z",
+      "time": "2026-11-13T01:11:05.000Z",
       "name": "Corn Futures,Dec-2026",
       "exchange": "CBOT"
     },
     "ZS=F": {
-      "price": 1219.5,
+      "price": 1223.5,
       "prevClose": 1219,
       "currency": "USX",
-      "time": "2026-11-12T19:19:57.000Z",
+      "time": "2026-11-13T01:11:05.000Z",
       "name": "Soybean Futures,Jan-2027",
       "exchange": "CBOT"
     },
     "ZW=F": {
-      "price": 582.5,
+      "price": 583.25,
       "prevClose": 584.25,
       "currency": "USX",
-      "time": "2026-11-12T19:19:59.000Z",
+      "time": "2026-11-13T01:10:51.000Z",
       "name": "Chicago SRW Wheat Futures,Dec-2",
       "exchange": "CBOT"
     },
     "KE=F": {
-      "price": 629.5,
+      "price": 630,
       "prevClose": 632.25,
       "currency": "USX",
-      "time": "2026-11-12T19:19:56.000Z",
+      "time": "2026-11-13T01:11:00.000Z",
       "name": "KC HRW Wheat Futures,Dec-2026",
       "exchange": "CBOT"
     },
@@ -67,18 +67,18 @@
       "exchange": "CME"
     },
     "HO=F": {
-      "price": 4.2891,
+      "price": 4.2806,
       "prevClose": 4.2865,
       "currency": "USD",
-      "time": "2026-11-12T23:32:47.000Z",
+      "time": "2026-11-13T01:09:14.000Z",
       "name": "Heating Oil Dec 26",
       "exchange": "NY Mercantile"
     },
     "MIAX:MWE1!": {
-      "price": 6.2275,
-      "prevClose": 6.355,
+      "price": 6.21,
+      "prevClose": 6.2275,
       "currency": "USD",
-      "time": "2026-11-12T19:19:59.000Z",
+      "time": "2026-11-13T01:08:57.000Z",
       "name": "Hard Red Spring Wheat (MW) Futures, front month",
       "exchange": "MIAX"
     }

@@ -1,9 +1,9 @@
 {
-  "generatedAt": "2026-11-14T05:01:29.084Z",
+  "generatedAt": "2026-11-14T05:58:30.610Z",
   "source": "Yahoo Finance (CBOT/CME/NYMEX futures, delayed ~10-20 min) + TradingView (MIAX spring wheat, delayed ~10 min) + Bank of Canada USD/CAD",
   "quotes": {
     "ZC=F": {
-      "price": 446,
+      "price": 445.5,
       "prevClose": 442.5,
       "currency": "USX",
       "time": "2026-11-13T19:19:59.000Z",
@@ -11,7 +11,7 @@
       "exchange": "CBOT"
     },
     "ZS=F": {
-      "price": 1232.75,
+      "price": 1231.5,
       "prevClose": 1219,
       "currency": "USX",
       "time": "2026-11-13T19:19:58.000Z",
@@ -19,7 +19,7 @@
       "exchange": "CBOT"
     },
     "ZW=F": {
-      "price": 593.5,
+      "price": 593.25,
       "prevClose": 584.25,
       "currency": "USX",
       "time": "2026-11-13T19:19:55.000Z",
@@ -35,7 +35,7 @@
       "exchange": "CBOT"
     },
     "ZO=F": {
-      "price": 376.25,
+      "price": 376.5,
       "prevClose": 367.25,
       "currency": "USX",
       "time": "2026-11-13T19:19:17.000Z",

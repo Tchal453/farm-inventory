@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-13T22:53:23.803Z",
+  "generatedAt": "2026-11-14T05:01:29.084Z",
   "source": "Yahoo Finance (CBOT/CME/NYMEX futures, delayed ~10-20 min) + TradingView (MIAX spring wheat, delayed ~10 min) + Bank of Canada USD/CAD",
   "quotes": {
     "ZC=F": {
@@ -31,7 +31,7 @@
       "prevClose": 632.25,
       "currency": "USX",
       "time": "2026-11-13T19:19:58.000Z",
-      "name": "KC HRW Wheat Futures,Dec-2026",
+      "name": "KC HRW Wheat Futures,Mar-2027",
       "exchange": "CBOT"
     },
     "ZO=F": {
@@ -43,15 +43,15 @@
       "exchange": "CBOT"
     },
     "LE=F": {
-      "price": 224.925,
+      "price": 224.8,
       "prevClose": 222.95,
       "currency": "USX",
       "time": "2026-11-13T19:04:53.000Z",
-      "name": "Live Cattle Futures,Dec-2026",
+      "name": "Live Cattle Futures,Feb-2027",
       "exchange": "CME"
     },
     "GF=F": {
-      "price": 335.65,
+      "price": 335.35,
       "prevClose": 331.675,
       "currency": "USX",
       "time": "2026-11-13T19:04:58.000Z",
@@ -59,15 +59,15 @@
       "exchange": "CME"
     },
     "HE=F": {
-      "price": 61.475,
+      "price": 61.375,
       "prevClose": 61,
       "currency": "USX",
       "time": "2026-11-13T19:04:55.000Z",
-      "name": "Lean Hog Futures,Dec-2026",
+      "name": "Lean Hog Futures,Feb-2027",
       "exchange": "CME"
     },
     "HO=F": {
-      "price": 4.3067,
+      "price": 4.2585,
       "prevClose": 4.2865,
       "currency": "USD",
       "time": "2026-11-13T21:59:56.000Z",

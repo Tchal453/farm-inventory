@@ -1,44 +1,44 @@
 {
-  "generatedAt": "2026-11-17T04:04:31.807Z",
+  "generatedAt": "2026-11-17T05:09:31.105Z",
   "source": "Yahoo Finance (CBOT/CME/NYMEX futures, delayed ~10-20 min) + TradingView (MIAX spring wheat, delayed ~10 min) + Bank of Canada USD/CAD",
   "quotes": {
     "ZC=F": {
-      "price": 449.25,
+      "price": 448.75,
       "prevClose": 448.75,
       "currency": "USX",
-      "time": "2026-11-17T03:54:07.000Z",
+      "time": "2026-11-17T04:56:53.000Z",
       "name": "Corn Futures,Dec-2026",
       "exchange": "CBOT"
     },
     "ZS=F": {
-      "price": 1228,
+      "price": 1227.75,
       "prevClose": 1229,
       "currency": "USX",
-      "time": "2026-11-17T03:54:17.000Z",
+      "time": "2026-11-17T04:51:33.000Z",
       "name": "Soybean Futures,Jan-2027",
       "exchange": "CBOT"
     },
     "ZW=F": {
-      "price": 601,
+      "price": 599.5,
       "prevClose": 601,
       "currency": "USX",
-      "time": "2026-11-17T03:53:32.000Z",
+      "time": "2026-11-17T04:58:51.000Z",
       "name": "Chicago SRW Wheat Futures,Dec-2",
       "exchange": "CBOT"
     },
     "KE=F": {
-      "price": 631.25,
+      "price": 629.5,
       "prevClose": 629.25,
       "currency": "USX",
-      "time": "2026-11-17T03:53:32.000Z",
+      "time": "2026-11-17T04:58:51.000Z",
       "name": "KC HRW Wheat Futures,Mar-2027",
       "exchange": "CBOT"
     },
     "ZO=F": {
-      "price": 355,
+      "price": 355.5,
       "prevClose": 356,
       "currency": "USX",
-      "time": "2026-11-17T02:35:56.000Z",
+      "time": "2026-11-17T04:30:26.000Z",
       "name": "Oat Futures,Mar-2027",
       "exchange": "CBOT"
     },
@@ -67,15 +67,15 @@
       "exchange": "CME"
     },
     "HO=F": {
-      "price": 3.9634,
+      "price": 3.9604,
       "prevClose": 3.9995,
       "currency": "USD",
-      "time": "2026-11-17T03:53:23.000Z",
+      "time": "2026-11-17T04:59:28.000Z",
       "name": "Heating Oil Dec 26",
       "exchange": "NY Mercantile"
     },
     "MIAX:MWE1!": {
-      "price": 6.3775,
+      "price": 6.3725,
       "prevClose": 6.3875,
       "currency": "USD",
       "time": "2026-11-17T03:59:41.000Z",

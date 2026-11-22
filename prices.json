@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-22T20:54:56.189Z",
+  "generatedAt": "2026-11-22T23:52:35.564Z",
   "source": "Yahoo Finance (CBOT/CME/NYMEX futures, delayed ~10-20 min) + TradingView (MIAX spring wheat, delayed ~10 min) + Bank of Canada USD/CAD",
   "quotes": {
     "ZC=F": {
@@ -67,10 +67,10 @@
       "exchange": "CME"
     },
     "HO=F": {
-      "price": 3.8473,
+      "price": 3.8564,
       "prevClose": 3.8473,
       "currency": "USD",
-      "time": "2026-11-20T21:59:59.000Z",
+      "time": "2026-11-22T23:41:45.000Z",
       "name": "Heating Oil Jan 27",
       "exchange": "NY Mercantile"
     },
